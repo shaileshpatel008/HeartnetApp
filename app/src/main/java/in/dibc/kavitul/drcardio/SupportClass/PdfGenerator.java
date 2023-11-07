@@ -484,7 +484,6 @@ public class PdfGenerator {
 
         lineNo = drawAnalysis(page_horz_start, page_vert_start, lineNo, paint, page);
 
-
         Log.v("X START FROM :::: ", page_horz_start+" :: "+page_vert_start);
         // For ------
         lineNo = lines * ((int) Math.ceil((float) lineNo / (float) lines)); /* skip remaining lines in the column & skip to start of new column */
