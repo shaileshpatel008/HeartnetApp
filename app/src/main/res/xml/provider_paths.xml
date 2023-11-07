@@ -1,0 +1,5 @@
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--<external-files-path name="reports" path="storage/emulated/0/TELE-ECG/TELE-ECG Reports/"/>-->
+    <!--<files-path name="tooy" path="docs/"/>-->
+    <root-path name="root" path="." />
+</paths>

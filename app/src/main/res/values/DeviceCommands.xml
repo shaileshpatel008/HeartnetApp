@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--    Device Commands -->
+    <integer name="CMD_START">0x41</integer> /* To start acquisition of data */
+    <integer name="CMD_STOP">0x53</integer> /* To stop acquisition of data */
+    <integer name="CMD_TEST_START">0x54</integer> /* To stop acquisition of data */
+    <integer name="CMD_ACK">0x79</integer> /* Acknowledgement to be sent to device after every successful response */
+    <integer name="CMD_ERR">0x78</integer> /* Error to be sent to device on receiving a bad response */
+
+    <integer name="CMD_GAIN_1">0x42</integer>
+    <integer name="CMD_GAIN_2">0x43</integer>
+    <integer name="CMD_GAIN_3">0x44</integer>
+    <integer name="CMD_GAIN_4">0x45</integer>
+    <integer name="CMD_GAIN_6">0x46</integer>
+    <integer name="CMD_GAIN_8">0x47</integer>
+    <integer name="CMD_GAIN_12">0x48</integer>
+
+
+    <!--    Device Response -->
+    <integer name="SORa">0xAA</integer> /* Start of response A with device info */
+    <integer name="SORb">0xBB</integer> /* Start of response B without device info */
+    <integer name="EOR">0x0A</integer> /* End of response A and B */
+
+    <integer name="status_bytes">3</integer> /* Length of status bytes in response A */
+    <integer name="data_bytes">16</integer> /* Length of data bytes in response A and B */
+
+
+</resources>

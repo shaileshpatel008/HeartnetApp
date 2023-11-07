@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:background="@color/bg_color"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:background="@color/colorAccent"
+        android:layout_height="@dimen/_60sdp">
+
+        <ImageView
+            android:id="@+id/btn_back_press_help"
+            android:layout_width="@dimen/_40sdp"
+            android:layout_height="@dimen/_40sdp"
+            android:layout_gravity="center|start"
+            android:layout_weight="0"
+            android:paddingLeft="@dimen/_6sdp"
+            android:src="@drawable/backs"
+            android:visibility="visible"
+            android:paddingStart="@dimen/_6sdp"
+            tools:ignore="RtlSymmetry" />
+
+        <TextView
+            android:id="@+id/txt_header_advance"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:gravity="center|start"
+            android:singleLine="true"
+            android:text="@string/help"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_18sdp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <SearchView
+        android:id="@+id/mySearchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_10sdp"
+        android:background="@drawable/bg_settings_box"
+android:visibility="gone"
+        />
+    <ListView
+        android:visibility="gone"
+        android:id="@+id/list_view_help"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:text="Coming Soon"
+    android:textSize="@dimen/_15sdp"
+    android:gravity="center" />
+</LinearLayout>

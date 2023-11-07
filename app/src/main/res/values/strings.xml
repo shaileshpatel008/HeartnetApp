@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dr. Cardio</string>
+    <string name="app_title">Dr. Cardio</string>
+    <string name="app_subtitle">12 channel mobile ECG</string>
+
+
+
+    /* Login screen string */
+    <string name="rememberme">Remember me on this device.</string>
+    <string name="login">Login</string>
+    <string name="username">Email</string>
+    <string name="password">Password</string>
+    <string name="new_ecg">New ECG</string>
+    <string name="load_data">LOAD DATA</string>
+    <string name="reports">Reports</string>
+    <string name="help">HELP</string>
+    <string name="settings">SETTINGS</string>
+    <string name="new_hrv">New HRV</string>
+
+
+    <string name="dialog_permission_title">Grant Permissions</string>
+    <string name="dialog_permission_message">This app needs permission to use this feature. You can grant them in app settings.</string>
+    <string name="go_to_settings">GOTO SETTINGS</string>
+
+    <string name="lbl_set_profile_photo">Set profile image</string>
+    <string name="lbl_take_camera_picture">Take a picture</string>
+    <string name="lbl_choose_from_gallery">Choose from gallery</string>
+
+    <string name="toast_image_intent_null">Image picker option is missing!</string>
+
+    <string name="pick_image_intent_text">Choose an image</string>
+
+    <string name="click_here_to_connect">Click here to connect</string>
+    <string name="try_connect_to">"Trying to connect to "</string>
+    <string name="alert_message_change_device">Do you really want to change the Bluetooth device?</string>
+    <string name="alert_change_device_title">Change Bluetooth Device</string>
+    <string name="unable_to_connect_to">"Unable to connect to "</string>
+    <string name="open_generated_pdf">"Do you want to open the generated PDF File?"</string>
+    <string name="select_filter">Select Filter</string>
+    <string name="select_gain">Select Gain</string>
+    <string name="test_mode">Test Mode</string>
+    <string name="auto_start">Auto Start</string>
+    <string name="secs_to_start">Secs to start</string>
+    <string name="secs_to_save">Secs to save</string>
+    <string name="filter">Filter</string>
+    <string name="gain">Gain</string>
+    <string name="auto_save">Auto Save</string>
+    <string name="save">Save</string>
+    <string name="barc_logo">BARC Logo</string>
+    <string name="bluetooth_icon">Bluetooth Icon</string>
+    <string name="no_of_graphs_to_display">No of Graphs to display</string>
+    <string name="app_settings">SETTINGS</string>
+    <string name="personalization">DOCTOR\'S INFO</string>
+    <!-- Patient Labels -->
+    <string name="patient_id_label">ID</string>
+    <string name="patient_name_label">Name</string>
+    <string name="patient_age_label">Age</string>
+    <string name="patient_sex_label">Gender</string>
+    <string name="patient_medications_label">Meds</string>
+    <string name="patient_bloodpressure_label">Blood Pressure</string>
+    <string name="patient_dob_label">Date of Birth</string>
+    <string name="patient_height_label">Height</string>
+    <string name="patient_weight_label">Weight</string>
+    <string name="patient_comments_label">Comments</string>
+    <!-- Titles -->
+    <string name="title_1">Title 1</string>
+    <string name="title_2">Title 2</string>
+    <string name="delete">Delete</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <!-- Doctor Labels -->
+    <string name="doctor_name_label">Name</string>
+    <string name="doctor_address_label">Address</string>
+    <string name="doctor_contactno_label">Contact</string>
+    <string name="doctor_website_label">Website</string>
+    <string name="doctor_email_label">Email</string>
+    <!-- ECG Labels -->
+    <string name="heart_rate">Heart Rate</string>
+    <string name="ventricular_rate">Ventricular Rate</string>
+    <string name="pr_interval">PR Interval</string>
+    <string name="qrs_interval">QRS Interval</string>
+    <string name="qt_qtc">QT/QTc</string>
+    <string name="p_r_t_axes">P-R-T Axes</string>
+    <string name="advanced_settings">Advanced Settings</string>
+    <string name="log_label">Log Level</string>
+    <string name="language_label">Language</string>
+
+    <string-array name="graph_type">
+        <item>(3x4) Simultaneous Graph</item>
+        <item>(3x4) Sequential Graph</item>
+        <item>Mobile</item>
+    </string-array>
+    <string name="r_amplitude">R Amplitude</string>
+    <string name="pq_interval">PQ Interval</string>
+    <string name="qt_interval">QT Interval</string>
+    <string name="graph_display_disclaimer">Graph not to the scale</string>
+    <string name="threeByteData">3 Byte Data</string>
+    <string name="comments">Comments</string>
+    <string name="weight_kg">Weight (kg)</string>
+    <string name="operating_mode">Mode</string>
+    <string name="mode_ecg">ECG</string>
+    <string name="mode_test">TEST</string>
+    <string name="patient_data">Patient Data</string>
+    <string name="test_ecg">Test ECG</string>
+    <string name="alert_message_test_mode_title">Indications of proper functioning of Test Mode</string>
+    <string name="alert_message_test_mode">Large (2mV) square wave in leads I, II, aVR and V1-V6. Small (1mV) square wave in aVL and aVF. Straight line in lead-III.</string>
+    <string name="verson">Version</string>
+    <string name="csv">CSV</string>
+    <string name="csv_label">Save .csv</string>
+</resources>

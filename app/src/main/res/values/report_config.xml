@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="report_page_width">842</integer>
+    <integer name="report_page_height">595</integer>
+    <integer name="report_page_padding">19</integer>
+    <integer name="report_padding">5</integer>
+
+    <integer name="report_info_line_height">10</integer>
+    <integer name="report_info_lines">8</integer>
+</resources>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="shared_pref_title" translatable="false">DrCardioSharedPreferences</string>
+
+    /* Setting screen default values */
+    <string name="settings_default_test_mode" translatable="false">false</string>
+    <string name="settings_default_threeByteData" translatable="false">false</string>
+    <string name="settings_default_auto_start" translatable="false">false</string>
+    <integer name="settings_default_auto_start_seconds" translatable="false">5</integer>
+    <integer name="settings_default_auto_read_seconds" translatable="false">30</integer>
+    <string name="settings_default_auto_save" translatable="false">false</string>
+    <string name="settings_default_filter" translatable="false">0 to 40 Hz</string>
+    <string name="settings_default_gain" translatable="false">1</string>
+    <string name="settings_default_doctor_name" translatable="false"></string>
+    <string name="settings_default_doctor_address" translatable="false"></string>
+    <string name="settings_default_doctor_contactno" translatable="false"></string>
+    <string name="settings_default_doctor_website" translatable="false"></string>
+    <string name="settings_default_doctor_email" translatable="false"></string>
+    <string name="settings_filter" translatable="false">Filter</string>
+    <string name="settings_gain" translatable="false">Gain</string>
+    <string name="settings_default_language" translatable="false">English</string>
+    <string name="settings_default_log" translatable="false">Verbose</string>
+    <string name="settings_default_language_code" translatable="false">en</string>
+
+    //Language Codes
+    <string name="English" translatable="false">en</string>
+    <string name="Hindi" translatable="false">hi</string>
+
+    <string name="storage_folder" translatable="false">Dr.cardio</string>
+
+    <string name="report_text_separator" translatable="false"> : </string>
+
+    <string-array translatable="false" name="storage_sub_folders">
+        <item>Data</item>
+        <item>Reports</item>
+        <item>csv</item>
+<!--        <item>Logs</item>-->
+<!--        <item>Settings</item>-->
+<!--        <item>Old_ver_data</item>-->
+    </string-array>
+
+    <string-array translatable="false" name="patient_labels">
+        <item>patient_id_label</item>
+        <item>patient_name_label</item>
+        <item>patient_age_label</item>
+        <item>patient_sex_label</item>
+        <!--        <item>patient_medications_label</item>-->
+        <!--        <item>patient_bloodpressure_label</item>-->
+        <!--        <item>patient_dob_label</item>-->
+        <!--        <item>patient_height_label</item>-->
+        <!--        <item>patient_weight_label</item>-->
+        <!--        <item>patient_comments_label</item>-->
+    </string-array>
+
+    <string-array translatable="false" name="doctor_labels">
+        <item>doctor_name_label</item>
+        <!--        <item>doctor_address_label</item>-->
+        <item>doctor_contactno_label</item>
+        <!--        <item>doctor_website_label</item>-->
+        <!--        <item>doctor_email_label</item>-->
+    </string-array>
+
+    <string-array translatable="false" name="ecg_labels">
+        <item>heart_rate</item>
+        <item>qt_qtc</item>
+        <item>r_amplitude</item>
+        <item>pq_interval</item>
+        <item>qt_interval</item>
+        <item>qrs_interval</item>
+    </string-array>
+    <integer name="heart_rate">0</integer>
+    <integer name="qt_qtc">11</integer>
+    <integer name="r_amplitude">1</integer>
+    <integer name="pq_interval">7</integer>
+    <integer name="qt_interval">8</integer>
+    <integer name="qrs_interval">6</integer>
+
+    <string name="no_filter" translatable="false">No</string>
+
+<!--    <string-array name="spinner_filter">-->
+<!--        <item>No Filter</item>-->
+    <!--        <item>50 Hz Notch</item>-->
+<!--        <item>5 to 40 Hz</item>-->
+<!--        <item>0 to 40 Hz</item>-->
+<!--        <item>5 to 25 Hz</item>-->
+<!--        <item>0 to 25 Hz</item>-->
+<!--    </string-array>-->
+
+    <!--    20210121: BARC only 2 options for filter to be shown : Yes -> 0-40, No -> 0-150 -->
+    <string-array name="spinner_filter">
+        <item>No</item>
+        <item>50Hz Notch</item>
+        <item>0-40Hz</item>
+    </string-array>
+    <string-array name="spinner_actual_filter">
+        <item>No</item>
+        <item>50 Hz Notch</item>
+        <item>0 to 40 Hz</item>
+    </string-array>
+
+
+
+    <!--    <string-array name="spinner_gain">-->
+<!--        <item>1</item>-->
+<!--        <item>2</item>-->
+<!--        <item>3</item>-->
+<!--        <item>4</item>-->
+<!--        <item>6</item>-->
+<!--        <item>8</item>-->
+<!--        <item>12</item>-->
+<!--    </string-array>-->
+<!--    20210121: BARC only 3 options for gain to be shown : 0.5 -> 3, 1 -> 6, 2 -> 12-->
+    <string-array name="spinner_gain">
+        <item>0.5</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="spinner_actual_gain">
+        <item>3</item>
+        <item>6</item>
+        <item>12</item>
+    </string-array>
+
+    <string-array name="generate_report">
+        <item>Simultaneous 4x3</item>
+        <item>Sequential 4x3</item>
+        <item>Simultaneous 6x2</item>
+        <item>Sequential 6x2</item>
+        <!--<item>12x1</item>-->
+        <!--<item>Analysis</item>-->
+        <!--<item>Vector</item>-->
+        <!--<item>Mobile</item>-->
+    </string-array>
+
+
+</resources>

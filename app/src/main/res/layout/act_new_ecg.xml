@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            app:title="ECG Trend"
+            app:navigationIcon="@drawable/backs">
+
+            <LinearLayout
+                android:id="@+id/fab_generate_report"
+                android:layout_width="@dimen/_30sdp"
+                android:layout_height="@dimen/_30sdp"
+                android:background="@drawable/btn_roundedrect_white"
+                android:gravity="center"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginRight="0dp"
+                android:padding="@dimen/_6sdp"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_tick"
+                    android:layout_gravity="center"/>
+            </LinearLayout>
+
+            <ImageButton
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/btn_roundedrect_white"
+                android:padding="7dp"
+                android:src="@drawable/ic_report"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/new_ecg_start_stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/btn_roundedrect_grey"
+                android:backgroundTint="@color/green"
+                android:padding="7dp"
+                android:src="@drawable/icon_start" />
+
+            <TextView
+                android:id="@+id/timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="0dp"
+                android:textSize="@dimen/_13sdp"
+                android:gravity="center_vertical"
+                android:layout_gravity="center_vertical|right"
+                android:text=""
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_20sdp"
+                android:layout_marginRight="@dimen/_10sdp"
+                android:textColor="@color/white" />
+
+        </androidx.appcompat.widget.Toolbar>
+
+
+    <LinearLayout
+        android:id="@+id/graph_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="60dp"
+        android:weightSum="12"
+        android:orientation="vertical">
+
+        <SeekBar
+            android:id="@+id/seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:progress="50"
+            android:background="#0F0"
+            android:layout_weight="0.25"
+            />
+        <TextView
+            android:id="@+id/timer1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp"
+            android:background="@color/black"
+            android:textSize="@dimen/_10sdp"
+            android:text=""
+            android:visibility="gone"
+            android:textColor="@color/white" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_0"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_2"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_3"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_4"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_5"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_6"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_7"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_8"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_9"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_10"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_11"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+
+    </LinearLayout>
+
+
+
+
+
+    <LinearLayout
+        android:id="@+id/loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/translucent_white"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/_100sdp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ProgressBar
+            android:layout_width="@dimen/_50sdp"
+            android:layout_height="@dimen/_50sdp"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/_100sdp"
+            android:layout_marginBottom="@dimen/_50sdp" />
+
+        <TextView
+            android:id="@+id/loading_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Processing. This may take time. \nPlease wait..."
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_14sdp" />
+
+        <TextView
+            android:id="@+id/loading_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text=""
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_10sdp" />
+    </LinearLayout>
+</FrameLayout>

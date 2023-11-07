@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Set'S Title Arrary in HelpScreen-->
+    <array name="help_faq_title">
+        <item>Where are my data and reports stored</item>
+    </array>
+    <!-- Set'S Description Arrary  in HelpScreen-->
+    <array name="help_faq_desc">
+        <item>All data and reports are stored in Internal Memory\\Documents\\Dr.cardio folder</item>
+    </array>
+
+    <array name="patient_data_fields">
+        <item>patient_id</item>
+        <item>patient_name</item>
+        <item>patient_age</item>
+        <item>patient_sex</item>
+        <!--        <item>patient_bloodpressure</item>-->
+        <!--        <item>patient_dob</item>-->
+        <!--        <item>patient_height</item>-->
+        <!--        <item>patient_weight</item>-->
+        <item>patient_comments</item>
+    </array>
+
+    <array name="doctor_data_fields">
+        <item>doctor_name</item>
+        <!--        <item>doctor_address</item>-->
+        <item>doctor_contactno</item>
+        <!--        <item>doctor_website</item>-->
+        <!--        <item>doctor_email</item>-->
+    </array>
+
+    <array name="log_level">
+        <item>All</item> <!-- 0 - NA -->
+        <item>All</item> <!-- 1 - NA -->
+        <item>Verbose</item> <!--2. Verbose-->
+        <item>Debug</item><!--3. Debug-->
+        <item>Info</item><!--4. Info-->
+        <item>Warn</item><!--5. Warn-->
+        <item>Error</item><!--6. Error-->
+    </array>
+
+    <array name="languages">
+        <item>English</item>
+        <item>Hindi</item>
+    </array>
+</resources>
