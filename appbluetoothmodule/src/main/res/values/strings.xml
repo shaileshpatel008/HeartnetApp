@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">DIBC Bluetooth</string>
+    <string name="title_activity_scan_connect">Connect to device</string>
+
+
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="exit">Exit</string>
+    <string name="success">Success</string>
+    <string name="please_wait">Please wait....</string>
+    <string name="bt_error">Bluetooth Connection Error</string>
+    <string name="already_descovering">The app is already searching for bluetooth devices. Make sure your device is on.</string>
+    <string name="device_address">Device Address</string>
+    <string name="device_name">Device Name</string>
+    <string name="connecting">Connecting to %1$s.</string>
+    <string name="cancel">CLOSE</string>
+    <string name="continu">Continue</string>
+    <string name="wait">Please wait..</string>
+    <string name="already_connecting">A connection is already in process, please wait.</string>
+    <string name="connected">Device Connected:</string>
+    <string name="selectDevice">Please select a device to connect</string>
+    <string name="tapContinue">Tap the continue button to start operating your device.</string>
+    <string name="scan_devices">Scan Devices</string>
+    <string-array name="bt_connect_error">
+        <item>Your Device is not support bluetooth. You may use the application in demo mode but would not be able to work with an actual device.</item>
+        <item>You need to enable bluetooth to conenct to a device. Would you like to enable it now?</item>
+        <item>The Application needs bluetooth and location permissions to connect to the device.</item>
+<!--        <item>The Application needs bluetooth and location permissions to connect to the device. Enable the same form Application settings > Permissions.</item>-->
+        <item>Bluetooth disconnected and unable to communicate. Please go back to the main screen and try again.</item>
+    </string-array>
+    <string name="ok">Ok</string>
+</resources>
