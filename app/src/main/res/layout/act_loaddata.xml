@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout
+    <!--<LinearLayout
         android:layout_width="match_parent"
         android:background="@color/colorAccent"
         android:layout_height="@dimen/_60sdp">
@@ -44,14 +46,53 @@
             android:text=" Back"
             android:visibility="gone"
             android:textColor="#000000" />
-    </LinearLayout>
+    </LinearLayout>-->
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_100sdp"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/header_left_btn"
+                android:layout_width="@dimen/_30sdp"
+                android:layout_height="@dimen/_30sdp"
+                android:layout_gravity="center_vertical"
+                android:backgroundTint="@color/white"
+                android:foregroundTint="@color/white"
+                android:padding="6dp"
+                android:src="@drawable/backs"
+                app:tint="@color/colorWhite" />
+
+            <TextView
+                android:id="@+id/header_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_minus16sdp"
+                android:gravity="top|center_horizontal"
+                android:text="REPORTS"
+                android:textColor="@color/white"
+                android:fontFamily="@font/regular"
+                android:textSize="@dimen/_18sdp" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
     <LinearLayout
 
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="@dimen/_minus30sdp"
+        android:background="@drawable/round_rect_header"
+        android:paddingTop="@dimen/_10sdp"
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="horizontal">
@@ -59,7 +100,8 @@
         <ListView
             android:id="@+id/file_names_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:divider="@null">
 
         </ListView>
 

@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import in.dibc.kavitul.drcardio.Adapter.ItemListViewAdapter;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 
 public class LoadDataActivity extends AppCompatActivity implements View.OnClickListener {
@@ -71,11 +72,14 @@ public class LoadDataActivity extends AppCompatActivity implements View.OnClickL
     public void load_file_list()
     {
         file_names = getFileNames();
-        ArrayAdapter adapter = new ArrayAdapter<String>(this,
-                R.layout.act_file_name, file_names);
+        /*ArrayAdapter adapter = new ArrayAdapter<String>(this,
+                R.layout.act_file_name, file_names);*/
 
         ListView listView = findViewById(R.id.file_names_list);
-        listView.setAdapter(adapter);
+        //listView.setAdapter(adapter);
+
+        ItemListViewAdapter itemAdapter = new ItemListViewAdapter(this, R.layout.item_list_name, file_names);
+        listView.setAdapter(itemAdapter);
     }
 
 

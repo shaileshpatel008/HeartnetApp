@@ -124,5 +124,4 @@ public class StartupActivity extends AppCompatActivity {
             }
         }
     }
-
 }

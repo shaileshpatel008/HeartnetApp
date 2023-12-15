@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import in.dibc.kavitul.drcardio.Adapter.ItemListViewAdapter;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mFile;
 
@@ -58,7 +59,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     public void init() {
         file_names_list = findViewById(R.id.file_names_list);
         TextView hd = findViewById(R.id.header_text);
-        hd.setText(R.string.reports);
+        //hd.setText("REPORTS");
         ImageView hederBack = findViewById(R.id.header_left_btn);
         hederBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,6 +161,10 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
                 switch (which) {
                     case 0:
                         openPDFFile(file_names.get(position));
+                        /*String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position) + ".pdf";
+                        Intent intent = new Intent(ReportActivity.this, PDFViewActivity.class);
+                        intent.putExtra("PDFPath", filePath);
+                        startActivity(intent);*/
                         break;
                     case 1:
                         shareFile(position);
@@ -253,14 +258,16 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
 
     /* Populating the list view */
-    public void load_file_list()
-    {
+    public void load_file_list() {
         file_names = getFileNames();
-        ArrayAdapter adapter = new ArrayAdapter<String>(this,
-                R.layout.act_file_name, file_names);
+        /*ArrayAdapter adapter = new ArrayAdapter<String>(this,
+                R.layout.act_file_name, file_names);*/
 
         ListView listView = findViewById(R.id.file_names_list);
-        listView.setAdapter(adapter);
+        //listView.setAdapter(adapter);
+
+        ItemListViewAdapter itemAdapter = new ItemListViewAdapter(this, R.layout.item_list_name, file_names);
+        listView.setAdapter(itemAdapter);
     }
 
     /*

@@ -37,6 +37,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.File;
@@ -68,7 +69,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
     SeekBar seekbar;
     Boolean[] lead_status = new Boolean[10];
 
-    int min_saved_seconds = 15;
+    int min_saved_seconds = 20;
     static int PATIENT_FORM_REQUEST_CODE = 10001;
     static boolean openPatientFormToGenerateReport = false;
     // TODO: 24-10-2020 : Maybe static isn't necessary
@@ -718,6 +719,10 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                     ll_loading.setVisibility(View.GONE);
                     if (isGenerated[0]) {
                         displayAlertToView();
+                        FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(NewEcgActivity.this);
+                        Bundle params2 = new Bundle();
+                        params2.putString(FirebaseAnalytics.Param.VALUE, "Report Generated from : "+ecgData.patinet_deviceid+" Device");
+                        mFirebaseAnalytics.logEvent("ECG_Report_Generated", params2);
                     } else {
                         new AlertDialog.Builder(NewEcgActivity.this)
                                 .setTitle("Unable to generate report")

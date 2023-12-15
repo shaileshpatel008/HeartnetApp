@@ -1,5 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--  Single List Item Design -->
+<!--<androidx.cardview.widget.CardView-->
+<!--    android:id="@+id/ly_root"-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:background="#FEFEFE"-->
+<!--    android:layout_margin="8dp"-->
+<!--    app:cardCornerRadius="4dp">-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="fill_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="vertical">-->
+
+
+<!--        <TextView xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--            android:id="@+id/label"-->
+<!--            android:layout_width="fill_parent"-->
+<!--            android:layout_height="fill_parent"-->
+<!--            android:padding="10dip"-->
+<!--            android:textSize="@dimen/_16sdp"-->
+<!--            android:textStyle="bold" >-->
+<!--        </TextView>-->
+
+<!--    </LinearLayout>-->
+<!--</androidx.cardview.widget.CardView>-->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/label"
@@ -7,5 +35,8 @@
     android:layout_height="fill_parent"
     android:padding="10dip"
     android:textSize="@dimen/_16sdp"
+    android:layout_marginLeft="@dimen/_20sdp"
+    android:layout_marginRight="@dimen/_20sdp"
+    android:background="@drawable/btn_roundedrect_primary_light"
     android:textStyle="bold" >
 </TextView>

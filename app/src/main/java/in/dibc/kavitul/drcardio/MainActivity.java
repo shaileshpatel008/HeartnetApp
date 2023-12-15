@@ -7,6 +7,7 @@ import static android.os.Build.VERSION.SDK_INT;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -40,7 +41,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.gauravbhola.ripplepulsebackground.RipplePulseLayout;
+import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
+import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.saadahmedsoft.popupdialog.PopupDialog;
+import com.saadahmedsoft.popupdialog.Styles;
+import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener;
+
 import java.io.File;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +62,8 @@ import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.SupportClass.LocaleHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.widgets.RoundedImageView;
+
 @SuppressLint("MissingPermission")
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = "TeleECG_Main";
@@ -76,6 +88,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
     private boolean waitingForVersionResponse = false;
 
+    BubbleNavigationLinearView bubbleNavigation;
+
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 98;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //#Bhavesh Change
         isStoragePermissionGranted();
+
+        checkLocationPermission();
 
         /*if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -110,6 +128,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             // Permission has already been granted
         }*/
+
+        RipplePulseLayout rippleBackground = (RipplePulseLayout) findViewById(R.id.layout_ripplepulse);
+        rippleBackground.startRippleAnimation();
+
+        bubbleNavigation = findViewById(R.id.equal_navigation_bar);
+        bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
+            @Override
+            public void onNavigationChanged(View view, int position) {
+                //navigation changed, do something
+                if(position == 1) {
+                    Intent intent = new Intent(MainActivity.this, ReportActivity.class);
+                    startActivity(intent);
+                } else if(position == 2) {
+                    Intent intent = new Intent(MainActivity.this, MyAccountsActivity.class);
+                    startActivity(intent);
+                }
+
+                /*new Handler().postDelayed(
+                        new Runnable() {
+                            public void run() {
+                                bubbleNavigation.setCurrentActiveItem(0);
+                            }
+                        }, 2000);*/
+            }
+        });
     }
 
     @Override
@@ -129,6 +172,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getFileNames();
 
         getUserLocation();
+
+        bubbleNavigation.setCurrentActiveItem(0);
 
         /*if (SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
@@ -218,14 +263,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        }
 //    }
 
-    @Override
+    /*@Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
             Log.v(TAG,"Permission: "+permissions[0]+ "was "+grantResults[0]);
             //resume tasks needing this permission
         }
-    }
+    }*/
 
     private void initApp(){
         if(appbt.pref != null){
@@ -401,6 +446,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txt_connected_device_name.setClickable(false);
         txt_connected_device_name.setEnabled(false);
         txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
+        txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
+        menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
         settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
         settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
         settings.saveSettings();
@@ -637,7 +684,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 if (device_is_connected == 1 || waitingForVersionResponse) {
-                    Toast.makeText(this, "Please wait", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please wait trying to connect...", Toast.LENGTH_SHORT).show();
                 } else if (device_is_connected == 2) {
                     intent = new Intent(MainActivity.this, NewEcgActivity.class);
                 } else {
@@ -658,18 +705,67 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.menu_settings:
             case R.id.txt_settings_icon:
                 intent = new Intent(MainActivity.this, SettingsActivity.class);
+                intent.putExtra("From", "Settings88888888");
                 settingActivityResultLauncher.launch(intent);
                 return;
 //                break;
             case R.id.txt_help:
             case R.id.txt_help_icon:
             case R.id.menu_help:
-                intent = new Intent(MainActivity.this, HelpActivity.class);
+                /*FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+                Bundle params2 = new Bundle();
+                params2.putString(FirebaseAnalytics.Param.VALUE, "Clicked On Help Menu from Main Screen");
+                mFirebaseAnalytics.logEvent("Main_Activity_Help_Pressed", params2);*/
+                //intent = new Intent(MainActivity.this, HelpActivity.class);
+                helpDialog();
                 break;
         }
         if (intent != null) {
             startActivity(intent);
         }
+    }
+
+    private void helpDialog() {
+        PopupDialog.getInstance(this)
+                .setStyle(Styles.IOS)
+                .setHeading("Help")
+                .setDescription("Do you want to contact support via phone call or chat using WhatsApp?")
+                .setNegativeButtonText("Call")
+                .setPositiveButtonText("WhatsApp")
+                //.setPositiveButtonBackground(R.color.colorPrimary)
+                //.setPopupDialogIcon(R.drawable.btn_icon_help)
+                //.setPopupDialogIconTint(R.color.colorPrimary)
+                .setCancelable(true)
+                .showDialog(new OnDialogButtonClickListener() {
+                    @Override
+                    public void onPositiveClicked(Dialog dialog) {
+                        super.onPositiveClicked(dialog);
+
+                        PackageManager packageManager = getPackageManager();
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+
+                        try {
+                            String phone = "+919638389333";
+                            String url = "https://api.whatsapp.com/send?phone="+ phone +"&text=" + URLEncoder.encode("Hi!", "UTF-8");
+                            i.setPackage("com.whatsapp");
+                            i.setData(Uri.parse(url));
+                            //if (i.resolveActivity(packageManager) != null) {
+                                startActivity(i);
+                            //}
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onNegativeClicked(Dialog dialog) {
+                        super.onNegativeClicked(dialog);
+                        Intent intent = new Intent(Intent.ACTION_DIAL);
+
+                        intent.setData(Uri.parse("tel:+919638389333"));
+                        startActivity(intent);
+                    }
+                });
     }
 
 
@@ -710,5 +806,77 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         disconnectFromDevice();
         super.onDestroy();
+    }
+
+    public boolean checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(this)
+                        .setTitle("Location Permission")
+                        .setMessage("You have to allow location permission to access location")
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(MainActivity.this,
+                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                        MY_PERMISSIONS_REQUEST_LOCATION);
+                            }
+                        })
+                        .create()
+                        .show();
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // location-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                        //Request location updates:
+                        //locationManager.requestLocationUpdates(provider, 400, 1, this);
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+
+                }
+                return;
+            }
+
+        }
     }
 }

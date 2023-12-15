@@ -23,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +43,8 @@ import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.williamww.silkysignature.views.SignaturePad;
+
+import org.honorato.multistatetogglebutton.MultiStateToggleButton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,6 +69,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
     public static final int REQUEST_IMAGE = 100;
     SwitchCompat settings_test_mode, switch_csv;
+
+    MultiStateToggleButton mstb;
     EditText settings_doctor_name, settings_doctor_address, settings_doctor_contactno, settings_doctor_website, settings_doctor_email;
     Spinner spinner_filter, spinner_gain, spinner_language, spinner_log;
     Button settings_save;
@@ -74,8 +79,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     String[] languages = null;
     String[] log_level = null;
     int position_filter, position_gain, position_language, position_log;
-    private TextView alert_report;
-    private ImageView alert_report_arrow;
+    private TextView alert_report, header_text;
+    private ImageView alert_report_arrow, header_left_btn;
 
     private SignaturePad mSilkySignaturePad;
     private Button mClearButton;
@@ -83,6 +88,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     private Button mCompressButton;
 
     ImageView imgProfile, imgPlus;
+
+    LinearLayout llPatientInfo, llSettings;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -129,9 +136,15 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         spinner_language = findViewById(R.id.spinner_language);
         spinner_log = findViewById(R.id.spinner_log);
         switch_csv = findViewById(R.id.switch_csv);
+        llPatientInfo = findViewById(R.id.llPatientInfo);
+        llSettings = findViewById(R.id.llSettings);
+
+        header_text = findViewById(R.id.header_text);
+        header_left_btn = findViewById(R.id.header_left_btn);
 
         settings_save.setOnClickListener(this);
         alert_report.setOnClickListener(this);
+        header_left_btn.setOnClickListener(this);
         alert_report_arrow.setOnClickListener(this);
 
         try {
@@ -140,13 +153,36 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
             e.printStackTrace();
         }
 
+        mstb = findViewById(R.id.mstb_multi_id);
+        mstb.enableMultipleChoice(false);
+        //mstb.setColorRes(R.color.colorPrimary, R.color.colorPrimaryLight);
+        mstb.setPressedColors(getResources().getColor(R.color.colorWhite), getResources().getColor(R.color.colorPrimary));
+        mstb.setNotPressedColors(getResources().getColor(R.color.colorPrimary), getResources().getColor(R.color.colorPrimaryLight));
+
+
+        if (getIntent() != null) {
+            if(getIntent().getExtras().getString("From").equalsIgnoreCase("Settings")) {
+                llSettings.setVisibility(View.VISIBLE);
+                llPatientInfo.setVisibility(View.GONE);
+                header_text.setText("Settings".toUpperCase());
+            } else {
+                llSettings.setVisibility(View.GONE);
+                llPatientInfo.setVisibility(View.VISIBLE);
+                header_text.setText("Profile".toUpperCase());
+            }
+        }
     }
 
     private void getSettings(){
         //Get saved settings
 
         //Set values in UI
-        settings_test_mode.setChecked(settings.test_mode.equals("true"));
+        //settings_test_mode.setChecked(settings.test_mode.equals("true"));
+        if(settings.test_mode.equals("true")) {
+            mstb.setValue(1);
+        } else {
+            mstb.setValue(0);
+        }
         switch_csv.setChecked(settings.csv);
 
         //Populate Filter Spinner and set value
@@ -350,15 +386,25 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 openGraphAlertDialogBox();
                 break;
             case R.id.settings_save:
-                Bitmap signatureBitmap = mSilkySignaturePad.getSignatureBitmap();
-                if (addJpgSignatureToGallery(signatureBitmap)) {
-                    Toast.makeText(SettingsActivity.this, "Data saved into the Gallery", Toast.LENGTH_SHORT).show();
-                    saveSettings();
-                    Intent intent = new Intent();
-                    setResult(RESULT_OK, intent);
-                    finish();
-                } else {
-                    Toast.makeText(SettingsActivity.this, "Unable to store the signature and save the data", Toast.LENGTH_SHORT).show();
+                if (getIntent() != null) {
+                    if(getIntent().getExtras().getString("From").equalsIgnoreCase("Settings")) {
+                        Toast.makeText(SettingsActivity.this, "Settings saved successfully", Toast.LENGTH_SHORT).show();
+                        saveSettings();
+                        Intent intent = new Intent();
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    } else {
+                        Bitmap signatureBitmap = mSilkySignaturePad.getSignatureBitmap();
+                        if (addJpgSignatureToGallery(signatureBitmap)) {
+                            Toast.makeText(SettingsActivity.this, "Data saved into the Gallery", Toast.LENGTH_SHORT).show();
+                            saveSettings();
+                            Intent intent = new Intent();
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        } else {
+                            Toast.makeText(SettingsActivity.this, "Unable to store the signature and save the data", Toast.LENGTH_SHORT).show();
+                        }
+                    }
                 }
                 break;
             case R.id.img_profile:
@@ -383,13 +429,21 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                             }
                         }).check();
                 break;
+            case R.id.header_left_btn:
+                onBackPressed();
+                break;
         }
 
     }
 
     private void saveSettings(){
         //Get value of switch test mode
-        settings.test_mode = settings_test_mode.isChecked() ? "true" : "false";
+        //settings.test_mode = settings_test_mode.isChecked() ? "true" : "false";
+        if(mstb.getValue() == 1) {
+            settings.test_mode = "true";
+        } else {
+            settings.test_mode = "false";
+        }
         settings.csv = switch_csv.isChecked();
 
 
@@ -626,7 +680,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         boolean result = false;
         try {
             //deleteFiles(new File(getAlbumStorageDir("Documents").getPath()).getPath());
-            File photo = new File(getAlbumStorageDir("DrCardioDocuments"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+            File photo = new File(getAlbumStorageDir("DrCardioDocument"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
             deleteSingleFile(photo);
             saveBitmapToJPG(signature, photo);
             scanMediaFile(photo);
@@ -648,7 +702,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     public boolean addSvgSignatureToGallery(String signatureSvg) {
         boolean result = false;
         try {
-            File svgFile = new File(getAlbumStorageDir("DrCardioDocuments"), String.format("DoctorSignature.svg", System.currentTimeMillis()));
+            File svgFile = new File(getAlbumStorageDir("DrCardioDocument"), String.format("DoctorSignature.svg", System.currentTimeMillis()));
             OutputStream stream = new FileOutputStream(svgFile);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
             writer.write(signatureSvg);

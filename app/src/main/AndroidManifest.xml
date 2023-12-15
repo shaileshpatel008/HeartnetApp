@@ -11,64 +11,85 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-<!--    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />-->
-    <!--<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage"/>-->
 
     <application
+        android:name=".SupportClass.App"
         android:allowBackup="true"
-        android:label="@string/app_name"
+        android:clearTaskOnLaunch="true"
         android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:requestLegacyExternalStorage="true"
-        tools:targetApi="q"
-        android:name="in.dibc.kavitul.drcardio.SupportClass.App"
-        android:clearTaskOnLaunch="true"
-        tools:ignore="LockedOrientationActivity" >
-        <activity android:name="in.dibc.kavitul.drcardio.StartupActivity" android:screenOrientation="portrait"
-            android:exported="true">
+        tools:ignore="LockedOrientationActivity"
+        tools:targetApi="q">
+        <activity
+            android:name=".PDFViewActivity_"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PDFViewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".StartupActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name="in.dibc.kavitul.drcardio.MainActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name="in.dibc.kavitul.drcardio.NewEcgActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name="in.dibc.kavitul.drcardio.NewHRVActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name=".ImagePickerActivity"
+            android:name=".MainActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="in.dibc.kavitul.drcardio.SettingsActivity"
+            android:name=".NewEcgActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MyAccountsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".NewHRVActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ImagePickerActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SettingsActivity"
             android:configChanges="keyboardHidden"
             android:screenOrientation="portrait" />
-        <activity android:name="in.dibc.kavitul.drcardio.LoadDataActivity"
+        <activity
+            android:name=".LoadDataActivity"
             android:screenOrientation="portrait" />
-        <activity android:name="in.dibc.kavitul.drcardio.HelpActivity"
+        <activity
+            android:name=".HelpActivity"
             android:screenOrientation="portrait" />
-        <activity android:name="in.dibc.kavitul.drcardio.PatientData"
+        <activity
+            android:name=".PatientData"
             android:screenOrientation="portrait" />
-        <activity android:name="in.dibc.kavitul.drcardio.LoadPrevVerDataActivity"
+        <activity
+            android:name=".LoadPrevVerDataActivity"
             android:screenOrientation="portrait" />
-        <activity android:name="in.dibc.kavitul.drcardio.CsvDataActivity"
+        <activity
+            android:name=".CsvDataActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="in.dibc.kavitul.drcardio.ReportActivity"
+            android:name=".ReportActivity"
             android:label="Report Activity"
-            android:screenOrientation="portrait"
-            android:noHistory="true" />
+            android:noHistory="true"
+            android:screenOrientation="portrait" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

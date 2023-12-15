@@ -97,4 +97,9 @@
     <string name="verson">Version</string>
     <string name="csv">CSV</string>
     <string name="csv_label">Save .csv</string>
+
+    <string-array name="runMode">
+        <item>ECG</item>
+        <item>Test</item>
+    </string-array>
 </resources>

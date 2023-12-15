@@ -481,6 +481,7 @@ public class PdfGenerator {
         drawDoctorInfo(page_horz_start, page_vert_start, lineNo, paint, page);
 
         lineNo = drawComments(page_horz_start, page_vert_start, lineNo, paint, page);
+        //drawCommentsTest(page_horz_start, page_vert_start, lineNo, paint, page);
 
         lineNo = drawAnalysis(page_horz_start, page_vert_start, lineNo, paint, page);
 
@@ -592,7 +593,7 @@ public class PdfGenerator {
         int lineno = drawTitleText("Patient Info", x, y, 0, paint, page);
         //Log.v("PDF IMAGE PATH :: ", ecgData.patient_photo);
         //File image = new File(ecgData.patient_signature_photo);
-        File image = new File(getAlbumStorageDir("DrCardioDocuments"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+        File image = new File(getAlbumStorageDir("DrCardioDocument"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
         Log.v("PDF IMAGE PATH :: ", image.getPath());
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -610,7 +611,7 @@ public class PdfGenerator {
         int lineno = drawTitleText("Patient Info", x, y, 0, paint, page);
         //Log.v("PDF IMAGE PATH :: ", ecgData.patient_photo);
         //File image = new File(ecgData.patient_signature_photo);
-        File image = new File(getAlbumStorageDir("DrCardioDocuments"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+        File image = new File(getAlbumStorageDir("DrCardioDocument"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
         Log.v("PDF IMAGE PATH :: ", image.getPath());
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         bmOptions.inMutable = true;
@@ -899,6 +900,7 @@ public class PdfGenerator {
     private ArrayList<String> getComments() {
         ArrayList<String> comment = new ArrayList<String>();
         String data = ecgData.patient_comments;
+        //Log.v("Patient Comment Data :::: ", ""+data);
         //.split("(?<=\\G.{"+maxLength+"})");
 //        int max = (int) (maxLength * 2.5);
 //        Pattern p = Pattern.compile("\\G\\s*(.{1," + maxLength + "})(?=\\s|$)", Pattern.DOTALL);
@@ -907,7 +909,7 @@ public class PdfGenerator {
 //        while (m.find()) {
 //            comment.add(m.group(1));
 //        }
-        int len = data.toCharArray().length;
+        /* SP int len = data.toCharArray().length;
         for (int i = 0; i < len; i+=maxLength) {
             if(len < i + maxLength) {
                 comment.add(data.substring(i, len));
@@ -915,7 +917,14 @@ public class PdfGenerator {
                 comment.add(data.substring(i, i + maxLength));
             }
 
+        }*/
+
+        for (String line: data.split("\n")) {
+            //canvas.drawText(line, x, y, paint);
+            //y += paint.descent() - paint.ascent();
+            comment.add(line);
         }
+
         return comment;
     }
 
@@ -939,6 +948,26 @@ public class PdfGenerator {
             page.getCanvas().drawText(stringArray.get(i), x, y, paint);
         }
         return line_start + i;
+    }
+
+    private int drawTextForComment(ArrayList<String> stringArray, float x_start, float y_start, int line_start, Paint paint, PdfDocument.Page page) {
+        int i;
+        float x, y;
+        /*for (i = 0; i < stringArray.size(); i++) {
+            int lineNo = i + line_start;
+            x = (float) (x_start + padding + Math.floor(lineNo / lines) * col_width);
+            y = y_start + padding + (lineNo % lines + 1) * line_height;
+            page.getCanvas().drawText(stringArray.get(i), x, y, paint);
+        }*/
+
+        for (String line: ecgData.patient_comments.split("\n")) {
+            int lineNo = 0 + line_start;
+            x = (float) (x_start + padding + Math.floor(lineNo / lines) * col_width);
+            y = y_start + padding + (lineNo % lines + 1) * line_height;
+            page.getCanvas().drawText(line, x, y, paint);
+            y += paint.descent() - paint.ascent();
+        }
+        return line_start + 0;
     }
 
     private int drawBitmapPatientProfile(Bitmap bitmap, float x_start, float y_start, int line_start, Paint paint, PdfDocument.Page page) {

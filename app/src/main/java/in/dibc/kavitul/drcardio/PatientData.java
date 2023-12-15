@@ -370,6 +370,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
         ecgData.patient_id = ((EditText) findViewById(R.id.patient_id)).getText().toString();
         ecgData.patient_name = ((EditText) findViewById(R.id.patient_name)).getText().toString();
         ecgData.patient_age = ((EditText) findViewById(R.id.patient_age)).getText().toString();
+        Log.v("Patient Comment :: ", ""+((EditText) findViewById(R.id.patient_comments)).getText().toString());
         ecgData.patient_comments = ((EditText) findViewById(R.id.patient_comments)).getText().toString();
         //ecgData.patient_photo = patientPhotoPath;
 
@@ -725,7 +726,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     public boolean addJpgSignatureToGallery(Bitmap signature) {
         boolean result = false;
         try {
-            File photo = new File(getAlbumStorageDir("DrCardioDocuments"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+            File photo = new File(getAlbumStorageDir("DrCardioDocument"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
             deleteSingleFile(photo);
             saveBitmapToJPG(signature, photo);
             scanMediaFile(photo);
@@ -747,7 +748,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     public boolean addSvgSignatureToGallery(String signatureSvg) {
         boolean result = false;
         try {
-            File svgFile = new File(getAlbumStorageDir("DrCardioDocuments"), String.format("PatientSignature.svg", System.currentTimeMillis()));
+            File svgFile = new File(getAlbumStorageDir("DrCardioDocument"), String.format("PatientSignature.svg", System.currentTimeMillis()));
             OutputStream stream = new FileOutputStream(svgFile);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
             writer.write(signatureSvg);
