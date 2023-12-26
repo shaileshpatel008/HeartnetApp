@@ -40,6 +40,26 @@
                 android:layout_marginBottom="@dimen/_25sdp"
                 android:src="@drawable/whitelogo" />
 
+            <LinearLayout
+                android:id="@+id/llHelp"
+                android:layout_width="@dimen/_34sdp"
+                android:layout_height="@dimen/_34sdp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginRight="@dimen/_10sdp"
+                android:background="@drawable/circle_rect_white_light"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:src="@drawable/ic_help_new"
+                    app:tint="@color/black" />
+
+            </LinearLayout>
+
 
         </RelativeLayout>
 
@@ -145,23 +165,48 @@
                 android:id="@+id/layout_ripplepulse">
 
                 <LinearLayout
-                    android:id="@+id/menu_new_ecg"
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
+                    android:id="@+id/llAcquireNewECG"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:background="@drawable/circle_rect_primary_light"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="@dimen/_24sdp">
 
-                    <ImageView
-                        android:layout_width="@dimen/_30sdp"
-                        android:layout_height="@dimen/_30sdp"
-                        android:layout_marginTop="@dimen/_5sdp"
-                        android:src="@drawable/ic_ecg_home"
-                        app:tint="@color/colorWhite" />
+                    <LinearLayout
+                        android:id="@+id/menu_new_ecg"
+                        android:layout_width="@dimen/_50sdp"
+                        android:layout_height="@dimen/_50sdp"
+                        android:layout_centerInParent="true"
+                        android:background="@drawable/circle_rect_primary_light"
+                        android:gravity="center"
+                        android:orientation="vertical">
 
+                        <ImageView
+                            android:layout_width="@dimen/_30sdp"
+                            android:layout_height="@dimen/_30sdp"
+                            android:layout_marginTop="@dimen/_5sdp"
+                            android:src="@drawable/ic_ecg_home"
+                            app:tint="@color/colorWhite" />
 
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_acquire_new_ecg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="@dimen/_10sdp"
+                        android:gravity="center"
+                        android:text="Acquire New ECG"
+                        android:textAllCaps="true"
+                        android:textColor="@color/red"
+                        android:textSize="@dimen/_13sdp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
                 </LinearLayout>
+
+
             </com.gauravbhola.ripplepulsebackground.RipplePulseLayout>
 
         </LinearLayout>
@@ -213,7 +258,7 @@
                 app:bt_colorInactive="@color/default_inactive"
                 app:bt_icon="@drawable/ic_settings"
                 app:bt_shape="@drawable/menu_background_stroke"
-                app:bt_title="Setting" />
+                app:bt_title="Accounts" />
 
         </com.gauravk.bubblenavigation.BubbleNavigationLinearView>
 

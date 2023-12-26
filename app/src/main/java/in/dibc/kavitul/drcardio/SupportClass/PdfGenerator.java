@@ -558,8 +558,13 @@ public class PdfGenerator {
 
         // Credits
         //String credits = "Unconfirmed report from Dr. Cardio";
-        String credits = "To be Finally Confirmed by the doctor";
-        page.getCanvas().drawText(credits, (page_horz_stop + pagePadding) / 2, vert_stop - padding * 3, paint);
+        String credits = "To be Finally Confirmed by the doctor. Software calculated values, To be verified manually";
+        ArrayList<String> extraText = new ArrayList<String>();
+        extraText.add("To be Finally Confirmed by the doctor");
+        extraText.add("Software calculated values. To be verified manually");
+        page.getCanvas().drawText(extraText.get(0), (page_horz_stop + pagePadding) / 2, vert_stop - padding * 3, paint);
+        page.getCanvas().drawText(extraText.get(1), (page_horz_stop + pagePadding) / 2, (vert_stop - padding * 3) + 10, paint);
+        //drawText(extraText, (page_horz_stop + pagePadding) / 2, vert_stop - padding * 3, lineNo, paint, page);
 
         paint.setTextAlign(Paint.Align.LEFT);
         paint.setFakeBoldText(false);
@@ -593,7 +598,7 @@ public class PdfGenerator {
         int lineno = drawTitleText("Patient Info", x, y, 0, paint, page);
         //Log.v("PDF IMAGE PATH :: ", ecgData.patient_photo);
         //File image = new File(ecgData.patient_signature_photo);
-        File image = new File(getAlbumStorageDir("DrCardioDocument"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+        File image = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
         Log.v("PDF IMAGE PATH :: ", image.getPath());
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -611,7 +616,7 @@ public class PdfGenerator {
         int lineno = drawTitleText("Patient Info", x, y, 0, paint, page);
         //Log.v("PDF IMAGE PATH :: ", ecgData.patient_photo);
         //File image = new File(ecgData.patient_signature_photo);
-        File image = new File(getAlbumStorageDir("DrCardioDocument"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+        File image = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
         Log.v("PDF IMAGE PATH :: ", image.getPath());
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         bmOptions.inMutable = true;

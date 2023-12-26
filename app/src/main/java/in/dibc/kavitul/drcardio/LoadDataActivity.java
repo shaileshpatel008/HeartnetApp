@@ -6,14 +6,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -36,6 +41,12 @@ public class LoadDataActivity extends AppCompatActivity implements View.OnClickL
     ListView file_names_list;
     ArrayList<String> file_names;
 
+    EditText etSearch;
+
+    LinearLayout llSearch;
+
+    TextView tvNoReports;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +59,10 @@ public class LoadDataActivity extends AppCompatActivity implements View.OnClickL
         hederBack.setOnClickListener(this);
         file_names_list = findViewById(R.id.file_names_list);
         registerForContextMenu(file_names_list);
+
+        tvNoReports = findViewById(R.id.tvNoReports);
+        llSearch = findViewById(R.id.llSearch);
+
         //Populating the list view
         load_file_list();
         //On clicking an item in the list
@@ -80,6 +95,35 @@ public class LoadDataActivity extends AppCompatActivity implements View.OnClickL
 
         ItemListViewAdapter itemAdapter = new ItemListViewAdapter(this, R.layout.item_list_name, file_names);
         listView.setAdapter(itemAdapter);
+
+        etSearch = findViewById(R.id.etSearch);
+        // Add Text Change Listener to EditText
+        etSearch.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Call back the Adapter with current character to Filter
+                itemAdapter.getFilter().filter(s.toString());
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        if(file_names.size() == 0) {
+            tvNoReports.setVisibility(View.VISIBLE);
+            llSearch.setVisibility(View.GONE);
+            listView.setVisibility(View.GONE);
+        } else {
+            tvNoReports.setVisibility(View.GONE);
+            llSearch.setVisibility(View.VISIBLE);
+            listView.setVisibility(View.VISIBLE);
+        }
     }
 
 

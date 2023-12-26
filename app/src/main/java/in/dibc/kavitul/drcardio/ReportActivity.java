@@ -12,13 +12,17 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +33,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+
+import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
+import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,18 +54,35 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     private static final String TAG = "ReportActivity";
     ListView file_names_list;
     ArrayList<String> file_names;
+
+    TextView tvNoReports;
+
+    EditText etSearch;
+
+    LinearLayout llSearch;
+
+    TextView header_text;
+
+    BubbleNavigationLinearView bubbleNavigation;
     private int EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.act_loaddata);
+        setContentView(R.layout.act_reports);
         init();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        bubbleNavigation.setCurrentActiveItem(1);
     }
 
     public void init() {
         file_names_list = findViewById(R.id.file_names_list);
-        TextView hd = findViewById(R.id.header_text);
+        header_text = findViewById(R.id.header_text);
         //hd.setText("REPORTS");
         ImageView hederBack = findViewById(R.id.header_left_btn);
         hederBack.setOnClickListener(new View.OnClickListener() {
@@ -67,6 +91,25 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
                 onBackPressed();
             }
         });
+
+        bubbleNavigation = findViewById(R.id.equal_navigation_bar);
+        bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
+            @Override
+            public void onNavigationChanged(View view, int position) {
+                //navigation changed, do something
+                if(position == 0) {
+                    finish();
+                } else if(position == 2) {
+                    Intent intent = new Intent(ReportActivity.this, MyAccountsActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+        });
+
+        tvNoReports = findViewById(R.id.tvNoReports);
+        llSearch = findViewById(R.id.llSearch);
+
         //registerForContextMenu(file_names_list);
         //Populating the list view
 
@@ -131,6 +174,29 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
             }
         });
+
+        getReportsCount();
+    }
+
+    private ArrayList<String> getReportsCount() {
+        String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_DATA] + "/";
+        File dir = new File(filePath);
+        ArrayList<String> list = new ArrayList<String>();
+        if (dir.isDirectory()) {
+            String[] files = dir.list();
+            Pattern p = Pattern.compile("^(.*?)\\.dat$");
+            for (String file : files) {
+                Matcher m = p.matcher(file);
+                if (m.matches()) {
+                    list.add(m.group(1));
+                }
+            }
+        }
+
+        if(list.size() > 0) {
+            header_text.setText("Reports ("+list.size()+")");
+        }
+        return list;
     }
 
     @Override
@@ -162,7 +228,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
                     case 0:
                         openPDFFile(file_names.get(position));
                         /*String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position) + ".pdf";
-                        Intent intent = new Intent(ReportActivity.this, PDFViewActivity.class);
+                        Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
                         intent.putExtra("PDFPath", filePath);
                         startActivity(intent);*/
                         break;
@@ -268,6 +334,35 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
         ItemListViewAdapter itemAdapter = new ItemListViewAdapter(this, R.layout.item_list_name, file_names);
         listView.setAdapter(itemAdapter);
+
+        etSearch = findViewById(R.id.etSearch);
+        // Add Text Change Listener to EditText
+        etSearch.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Call back the Adapter with current character to Filter
+                itemAdapter.getFilter().filter(s.toString());
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        if(file_names.size() == 0) {
+            tvNoReports.setVisibility(View.VISIBLE);
+            llSearch.setVisibility(View.GONE);
+            listView.setVisibility(View.GONE);
+        } else {
+            tvNoReports.setVisibility(View.GONE);
+            llSearch.setVisibility(View.VISIBLE);
+            listView.setVisibility(View.VISIBLE);
+        }
     }
 
     /*

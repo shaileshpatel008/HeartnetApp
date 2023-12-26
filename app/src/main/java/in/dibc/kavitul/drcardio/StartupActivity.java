@@ -17,6 +17,8 @@ import in.dibc.kavitul.bluetoothmodule.BluetoothPermissions;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mFile;
 import in.dibc.kavitul.drcardio.SupportClass.mLog;
+import in.dibc.kavitul.drcardio.utils.PrefHelper;
+import in.dibc.kavitul.drcardio.walkthroughscreen.IntroductionActivity;
 
 public class StartupActivity extends AppCompatActivity {
     String TAG = "TeleECG_SplashScreen";
@@ -69,9 +71,16 @@ public class StartupActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(StartupActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
+                if( PrefHelper.getBoolean("isFirstTimeLoad", true)) {
+                    Intent intent = new Intent(StartupActivity.this, IntroductionActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Intent intent = new Intent(StartupActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+
             }
         }, SPLASH_TIME_OUT);
         /*BluetoothPermissions btPerm = new BluetoothPermissions(appbt.btHelper);

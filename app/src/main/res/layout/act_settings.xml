@@ -310,13 +310,29 @@
                             android:textColor="@color/black"
                             android:textSize="@dimen/_14sdp" />
 
-                        <org.honorato.multistatetogglebutton.MultiStateToggleButton
-                            android:id="@+id/mstb_multi_id"
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="0dip"
-                            android:layout_marginRight="@dimen/dimen_40dp"
-                            app:values="@array/runMode" />
+                            android:orientation="vertical">
+
+                            <org.honorato.multistatetogglebutton.MultiStateToggleButton
+                                android:id="@+id/mstb_multi_id"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="0dip"
+                                android:layout_marginRight="@dimen/dimen_40dp"
+                                app:values="@array/runMode" />
+
+                            <TextView
+                                android:id="@+id/tvSelected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center|start"
+                                android:padding="@dimen/_5sdp"
+                                android:text="You selected ECG Mode"
+                                android:textColor="@color/darkGrey"
+                                android:textSize="@dimen/_11sdp" />
+                        </LinearLayout>
 
                         <TextView
                             android:layout_width="0dp"
@@ -348,6 +364,7 @@
                             android:textColor="@color/black"
                             android:textSize="@dimen/_14sdp"></TextView>
                     </LinearLayout>
+
                 </LinearLayout>
 
                 <LinearLayout

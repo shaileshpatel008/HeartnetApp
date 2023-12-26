@@ -3,6 +3,8 @@ package in.dibc.kavitul.drcardio.SupportClass;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -14,9 +16,13 @@ import in.dibc.kavitul.drcardio.StartupActivity;
 public class App extends Application {
     private static final String TAG = "App";
 
+    public static SharedPreferences myPref;
+    private static App mInstance;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        mInstance = this;
         Thread.setDefaultUncaughtExceptionHandler(
                 new Thread.UncaughtExceptionHandler() {
                     @Override
@@ -34,11 +40,16 @@ public class App extends Application {
                         restart(getApplicationContext());
                     }
                 });
+        myPref = PreferenceManager.getDefaultSharedPreferences(App.mInstance);
     }
     public static void restart(Context context){
         Intent mainIntent = new Intent(context, StartupActivity.class);
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.getApplicationContext().startActivity(mainIntent);
         System.exit(0);
+    }
+
+    public static synchronized App getInstance() {
+        return mInstance;
     }
 }

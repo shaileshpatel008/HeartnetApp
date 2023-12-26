@@ -40,6 +40,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
+import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -74,6 +76,10 @@ import in.dibc.kavitul.drcardio.SupportClass.settings;
 public class MyAccountsActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = "My_Accounts_Activity";
 
+    ImageView header_left_btn;
+
+    BubbleNavigationLinearView bubbleNavigation;
+
     LinearLayout llBack, llLoadData, llProfile, llSettings, llHelp, llShareApp, llFeedback, llReview;
 
     @Override
@@ -85,6 +91,12 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
         init();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        bubbleNavigation.setCurrentActiveItem(2);
+    }
 
     public void init() {
 
@@ -92,10 +104,32 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
 
     private void initUIElements(){
         llBack = findViewById(R.id.llBack);
+        header_left_btn = findViewById(R.id.header_left_btn);
         llBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onBackPressed();
+            }
+        });
+        header_left_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
+        bubbleNavigation = findViewById(R.id.equal_navigation_bar);
+        bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
+            @Override
+            public void onNavigationChanged(View view, int position) {
+                //navigation changed, do something
+                if(position == 0) {
+                    finish();
+                } else if(position == 1) {
+                    Intent intent = new Intent(MyAccountsActivity.this, ReportActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
             }
         });
 
@@ -144,7 +178,7 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
                     Intent shareIntent = new Intent(Intent.ACTION_SEND);
                     shareIntent.setType("text/plain");
                     shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Dr. Cardio app");
-                    String shareMessage= "The specially-designed Dr. cardio application offers an intutive user interface with simple workflow,display,storage, and seamless sharing of ECG reports for healthcare professionals.\n\nLet me recommend you this application\n\n";
+                    String shareMessage= "Revolutionize your patient's heart health with Dr. Cardio! For cardiac care and proactive wellness management Download the app now. #DrCardio #HeartHealth\n\n";
                     shareMessage = shareMessage + "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID +"\n\n";
                     shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
                     startActivity(Intent.createChooser(shareIntent, "choose one"));
@@ -169,7 +203,7 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
                 startActivity(intent);*/
 
                 Intent email= new Intent(Intent.ACTION_SENDTO);
-                email.setData(Uri.parse("mailto:ajinkya@kavitul.com"));
+                email.setData(Uri.parse("mailto:support@drcardio.in"));
                 email.putExtra(Intent.EXTRA_SUBJECT, "Dr. Cardio app feedback");
                 email.putExtra(Intent.EXTRA_TEXT, "");
                 startActivity(email);

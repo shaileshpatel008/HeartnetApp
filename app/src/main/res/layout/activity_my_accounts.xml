@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
@@ -20,6 +21,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:orientation="horizontal">
 
             <ImageView
@@ -76,9 +78,49 @@
             android:visibility="gone"
             android:src="@drawable/logotext" />
 
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_100sdp"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <ImageView
+                    android:id="@+id/header_left_btn"
+                    android:layout_width="@dimen/_30sdp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:layout_gravity="center_vertical"
+                    android:backgroundTint="@color/white"
+                    android:foregroundTint="@color/white"
+                    android:padding="6dp"
+                    android:src="@drawable/backs"
+                    android:tint="@color/colorWhite" />
+
+                <TextView
+                    android:id="@+id/header_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_minus16sdp"
+                    android:gravity="top|center_horizontal"
+                    android:text="MY ACCOUNT"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/regular"
+                    android:textSize="@dimen/_18sdp" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/_minus30sdp"
+            android:background="@drawable/round_rect_header"
             android:layout_weight="1">
 
             <LinearLayout
@@ -306,6 +348,58 @@
 
             </LinearLayout>
         </ScrollView>
+
+        <com.gauravk.bubblenavigation.BubbleNavigationLinearView
+            android:id="@+id/equal_navigation_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_marginLeft="18dp"
+            android:layout_marginEnd="18dp"
+            android:layout_marginRight="18dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/rounded_rect_white"
+            android:elevation="8dp"
+            android:padding="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <com.gauravk.bubblenavigation.BubbleToggleView
+                android:id="@+id/m_item_shop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:bt_colorActive="@color/colorPrimary"
+                app:bt_colorInactive="@color/default_inactive"
+                app:bt_icon="@drawable/ic_home_new"
+                app:bt_shape="@drawable/menu_background_stroke"
+                app:bt_title="Home" />
+
+            <com.gauravk.bubblenavigation.BubbleToggleView
+                android:id="@+id/m_item_photos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:bt_colorActive="@color/colorPrimary"
+                app:bt_colorInactive="@color/default_inactive"
+                app:bt_icon="@drawable/ic_reports_new"
+                app:bt_shape="@drawable/menu_background_stroke"
+                app:bt_title="Reports" />
+
+            <com.gauravk.bubblenavigation.BubbleToggleView
+                android:id="@+id/m_item_call"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:bt_colorActive="@color/colorPrimary"
+                app:bt_colorInactive="@color/default_inactive"
+                app:bt_icon="@drawable/ic_settings"
+                app:bt_shape="@drawable/menu_background_stroke"
+                app:bt_title="Accounts" />
+
+        </com.gauravk.bubblenavigation.BubbleNavigationLinearView>
 
     </LinearLayout>
 

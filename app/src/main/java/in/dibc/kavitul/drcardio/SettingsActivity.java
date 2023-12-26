@@ -45,6 +45,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.williamww.silkysignature.views.SignaturePad;
 
 import org.honorato.multistatetogglebutton.MultiStateToggleButton;
+import org.honorato.multistatetogglebutton.ToggleButton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -88,6 +89,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     private Button mCompressButton;
 
     ImageView imgProfile, imgPlus;
+
+    TextView tvSelected;
 
     LinearLayout llPatientInfo, llSettings;
 
@@ -139,6 +142,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         llPatientInfo = findViewById(R.id.llPatientInfo);
         llSettings = findViewById(R.id.llSettings);
 
+        tvSelected = findViewById(R.id.tvSelected);
+
         header_text = findViewById(R.id.header_text);
         header_left_btn = findViewById(R.id.header_left_btn);
 
@@ -158,7 +163,17 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         //mstb.setColorRes(R.color.colorPrimary, R.color.colorPrimaryLight);
         mstb.setPressedColors(getResources().getColor(R.color.colorWhite), getResources().getColor(R.color.colorPrimary));
         mstb.setNotPressedColors(getResources().getColor(R.color.colorPrimary), getResources().getColor(R.color.colorPrimaryLight));
-
+        mstb.setOnValueChangedListener(new ToggleButton.OnValueChangedListener() {
+            @Override
+            public void onValueChanged(int position) {
+                Log.d(TAG, "Position: " + position);
+                if(position == 0) {
+                    tvSelected.setText("You selected ECG Mode");
+                } else {
+                    tvSelected.setText("You selected TEST Mode");
+                }
+            }
+        });
 
         if (getIntent() != null) {
             if(getIntent().getExtras().getString("From").equalsIgnoreCase("Settings")) {
@@ -179,8 +194,10 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         //Set values in UI
         //settings_test_mode.setChecked(settings.test_mode.equals("true"));
         if(settings.test_mode.equals("true")) {
+            tvSelected.setText("You selected TEST Mode");
             mstb.setValue(1);
         } else {
+            tvSelected.setText("You selected ECG Mode");
             mstb.setValue(0);
         }
         switch_csv.setChecked(settings.csv);
@@ -441,8 +458,10 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         //settings.test_mode = settings_test_mode.isChecked() ? "true" : "false";
         if(mstb.getValue() == 1) {
             settings.test_mode = "true";
+            tvSelected.setText("You selected TEST Mode");
         } else {
             settings.test_mode = "false";
+            tvSelected.setText("You selected ECG Mode");
         }
         settings.csv = switch_csv.isChecked();
 
@@ -680,7 +699,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         boolean result = false;
         try {
             //deleteFiles(new File(getAlbumStorageDir("Documents").getPath()).getPath());
-            File photo = new File(getAlbumStorageDir("DrCardioDocument"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+            File photo = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
             deleteSingleFile(photo);
             saveBitmapToJPG(signature, photo);
             scanMediaFile(photo);
@@ -702,7 +721,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     public boolean addSvgSignatureToGallery(String signatureSvg) {
         boolean result = false;
         try {
-            File svgFile = new File(getAlbumStorageDir("DrCardioDocument"), String.format("DoctorSignature.svg", System.currentTimeMillis()));
+            File svgFile = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("DoctorSignature.svg", System.currentTimeMillis()));
             OutputStream stream = new FileOutputStream(svgFile);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
             writer.write(signatureSvg);

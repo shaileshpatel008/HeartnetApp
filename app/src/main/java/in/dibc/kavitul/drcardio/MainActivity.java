@@ -10,11 +10,14 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -26,6 +29,7 @@ import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -52,6 +56,7 @@ import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener;
 import java.io.File;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,13 +67,14 @@ import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.SupportClass.LocaleHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.utils.PrefHelper;
 import in.dibc.kavitul.drcardio.widgets.RoundedImageView;
 
 @SuppressLint("MissingPermission")
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = "TeleECG_Main";
-    TextView menu_newecg, menu_csv, menu_hrv;
-    LinearLayout menu_loaddata, menu_reports, menu_settings, menu_help, menu_new_ecg;
+    TextView menu_newecg, menu_csv, menu_hrv, txt_acquire_new_ecg;
+    LinearLayout menu_loaddata, menu_reports, menu_settings, menu_help, menu_new_ecg, llAcquireNewECG, llHelp;
     ImageView img_menu_newecg, img_menu_loaddata, img_menu_reports, img_menu_settings, img_menu_help;
     TextView txt_connected_device_name, txt_load_data;
     int device_is_connected = 0;
@@ -89,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean waitingForVersionResponse = false;
 
     BubbleNavigationLinearView bubbleNavigation;
+
+    RipplePulseLayout rippleBackground;
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 98;
 
@@ -129,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Permission has already been granted
         }*/
 
-        RipplePulseLayout rippleBackground = (RipplePulseLayout) findViewById(R.id.layout_ripplepulse);
+        rippleBackground = findViewById(R.id.layout_ripplepulse);
         rippleBackground.startRippleAnimation();
 
         bubbleNavigation = findViewById(R.id.equal_navigation_bar);
@@ -180,6 +188,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 requestPermission();
             }
         }*/
+
+        //PrefHelper.setInt("PDFGenerateCount", PrefHelper.getInt("PDFGenerateCount", 0)+1);
+        //Log.v("PDF GENERATE COUNT :: ", ""+PrefHelper.getInt("PDFGenerateCount", 0));
+        if(PrefHelper.getInt("PDFGenerateCount", 0) % 6 == 1) {
+            rateAndReviewsDialog();
+        }
+
+        if (settings.test_mode.equals("true")) {
+            txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
+        } else {
+            txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
+        }
     }
 
     private void requestPermission() {
@@ -447,6 +467,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txt_connected_device_name.setEnabled(false);
         txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
         txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
+        txt_acquire_new_ecg.setVisibility(View.VISIBLE);
+        llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
+        rippleBackground.stopRippleAnimation();
         menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
         settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
         settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
@@ -458,6 +481,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             appbt.conn.btHelper = appbt.btHelper;
             checkHwVersion();
+        }
+
+        if (settings.test_mode.equals("true")) {
+            txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
+        } else {
+            txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
         }
     }
 
@@ -597,6 +626,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void initUIElements() {
         txt_connected_device_name = findViewById(R.id.txt_connected_device_name);
         menu_newecg = findViewById(R.id.txt_new_ecg);
+        txt_acquire_new_ecg = findViewById(R.id.txt_acquire_new_ecg);
         menu_loaddata = findViewById(R.id.menu_loaddata);
         menu_reports = findViewById(R.id.menu_reports);
         menu_settings = findViewById(R.id.menu_settings);
@@ -607,6 +637,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         img_menu_reports = findViewById(R.id.txt_reports_icon);
         img_menu_settings = findViewById(R.id.txt_settings_icon);
         img_menu_help = findViewById(R.id.txt_help_icon);
+        llAcquireNewECG = findViewById(R.id.llAcquireNewECG);
+        llHelp = findViewById(R.id.llHelp);
 
         txt_load_data = findViewById(R.id.txt_load_data);
 
@@ -624,6 +656,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         img_menu_settings.setOnClickListener(this);
         img_menu_help.setOnClickListener(this);
         txt_connected_device_name.setOnClickListener(this);
+        txt_acquire_new_ecg.setOnClickListener(this);
+        llAcquireNewECG.setOnClickListener(this);
+        llHelp.setOnClickListener(this);
         setNewECGbuttonText();
     }
 
@@ -679,6 +714,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.menu_new_ecg:
             case R.id.txt_new_ecg:
+            case R.id.txt_acquire_new_ecg:
+            case R.id.llAcquireNewECG:
             case R.id.txt_new_ecg_icon:
                 if (!checkPermission()) {
                     return;
@@ -712,6 +749,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.txt_help:
             case R.id.txt_help_icon:
             case R.id.menu_help:
+            case R.id.llHelp:
                 /*FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
                 Bundle params2 = new Bundle();
                 params2.putString(FirebaseAnalytics.Param.VALUE, "Clicked On Help Menu from Main Screen");
@@ -732,6 +770,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setDescription("Do you want to contact support via phone call or chat using WhatsApp?")
                 .setNegativeButtonText("Call")
                 .setPositiveButtonText("WhatsApp")
+                .setPositiveButtonTextColor(R.color.colorPrimary)
+                .setNegativeButtonTextColor(R.color.colorPrimary)
                 //.setPositiveButtonBackground(R.color.colorPrimary)
                 //.setPopupDialogIcon(R.drawable.btn_icon_help)
                 //.setPopupDialogIconTint(R.color.colorPrimary)
@@ -750,7 +790,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             i.setPackage("com.whatsapp");
                             i.setData(Uri.parse(url));
                             //if (i.resolveActivity(packageManager) != null) {
-                                startActivity(i);
+                            startActivity(i);
                             //}
                         } catch (Exception e){
                             e.printStackTrace();
@@ -768,13 +808,89 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
     }
 
+    private void rateAndReviewsDialog() {
+        PopupDialog.getInstance(this)
+                .setStyle(Styles.IOS)
+                .setHeading("Rate & Review")
+                .setDescription("Do you want to give review of the app?")
+                .setNegativeButtonText("Later")
+                .setPositiveButtonText("Rate & Review")
+                .setPositiveButtonTextColor(R.color.colorPrimary)
+                .setNegativeButtonTextColor(R.color.black)
+                //.setPositiveButtonBackground(R.color.colorPrimary)
+                //.setPopupDialogIcon(R.drawable.btn_icon_help)
+                //.setPopupDialogIconTint(R.color.colorPrimary)
+                .setCancelable(true)
+                .showDialog(new OnDialogButtonClickListener() {
+                    @Override
+                    public void onPositiveClicked(Dialog dialog) {
+                        super.onPositiveClicked(dialog);
+
+                        openAppRating(MainActivity.this);
+                    }
+
+                    @Override
+                    public void onNegativeClicked(Dialog dialog) {
+                        super.onNegativeClicked(dialog);
+                        dialog.dismiss();
+                    }
+                });
+    }
+
+    public void openAppRating(Context context) {
+        // you can also use BuildConfig.APPLICATION_ID
+        String appId = context.getPackageName();
+        Intent rateIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("market://details?id=" + appId));
+        boolean marketFound = false;
+
+        // find all applications able to handle our rateIntent
+        final List<ResolveInfo> otherApps = context.getPackageManager()
+                .queryIntentActivities(rateIntent, 0);
+        for (ResolveInfo otherApp: otherApps) {
+            // look for Google Play application
+            if (otherApp.activityInfo.applicationInfo.packageName
+                    .equals("com.android.vending")) {
+
+                ActivityInfo otherAppActivity = otherApp.activityInfo;
+                ComponentName componentName = new ComponentName(
+                        otherAppActivity.applicationInfo.packageName,
+                        otherAppActivity.name
+                );
+                // make sure it does NOT open in the stack of your activity
+                rateIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                // task reparenting if needed
+                rateIntent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                // if the Google Play was already open in a search result
+                //  this make sure it still go to the app page you requested
+                rateIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                // this make sure only the Google Play app is allowed to
+                // intercept the intent
+                rateIntent.setComponent(componentName);
+                context.startActivity(rateIntent);
+                marketFound = true;
+                break;
+
+            }
+        }
+
+        // if GP not present on device, open web browser
+        if (!marketFound) {
+            Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id="+appId));
+            context.startActivity(webIntent);
+        }
+    }
+
 
     private void setNewECGbuttonText() {
         TextView newEcg = findViewById(R.id.txt_new_ecg);
         if (settings.test_mode.equals("true")) {
             newEcg.setText(R.string.test_ecg);
+            txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
         } else {
             newEcg.setText(R.string.new_ecg);
+            txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
         }
     }
 

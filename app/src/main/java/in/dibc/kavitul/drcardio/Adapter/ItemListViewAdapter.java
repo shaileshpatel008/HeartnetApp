@@ -1,21 +1,25 @@
 package in.dibc.kavitul.drcardio.Adapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import in.dibc.kavitul.drcardio.R;
 
-public class ItemListViewAdapter extends ArrayAdapter<String> {
+public class ItemListViewAdapter extends ArrayAdapter<String> implements Filterable {
 
     // declaring our ArrayList of items
     private ArrayList<String> objects;
+    private ArrayList<String> objectsFiltered;
 
     Context mContext;
 
@@ -26,12 +30,13 @@ public class ItemListViewAdapter extends ArrayAdapter<String> {
     public ItemListViewAdapter(Context context, int textViewResourceId, ArrayList<String> objects) {
         super(context, textViewResourceId, objects);
         this.objects = objects;
+        this.objectsFiltered = objects;
         this.mContext = context;
     }
 
     @Override
     public int getCount() {
-        return super.getCount();
+        return objectsFiltered.size();
     }
 
 
@@ -58,7 +63,7 @@ public class ItemListViewAdapter extends ArrayAdapter<String> {
          *
          * Therefore, i refers to the current Item object.
          */
-        String i = objects.get(position);
+        String i = objectsFiltered.get(position);
 
         if (i != null) {
 
@@ -82,4 +87,41 @@ public class ItemListViewAdapter extends ArrayAdapter<String> {
 
     }
 
+    @Override
+    public Filter getFilter() {
+        Filter filter = new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+
+                FilterResults filterResults = new FilterResults();
+                if(constraint == null || constraint.length() == 0){
+                    filterResults.count = objectsFiltered.size();
+                    filterResults.values = objects;
+
+                } else{
+                    ArrayList<String> resultsModel = new ArrayList<>();
+                    String searchStr = constraint.toString().toLowerCase();
+
+                    for(String itemsModel:objects){
+                        if(itemsModel.toLowerCase().contains(searchStr.toLowerCase())){
+                            resultsModel.add(itemsModel);
+                        }
+                        filterResults.count = resultsModel.size();
+                        filterResults.values = resultsModel;
+                    }
+                }
+
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+
+                objectsFiltered = (ArrayList<String>) results.values;
+                notifyDataSetChanged();
+
+            }
+        };
+        return filter;
+    }
 }

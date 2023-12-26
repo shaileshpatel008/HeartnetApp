@@ -38,6 +38,14 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".PDFViewerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".walkthroughscreen.IntroductionActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".StartupActivity"
             android:exported="true"
             android:screenOrientation="portrait">

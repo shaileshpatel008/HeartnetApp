@@ -62,6 +62,7 @@ import java.util.List;
 import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.image_picker.ImagePicker;
 import in.dibc.kavitul.drcardio.utils.PathUtil;
+import in.dibc.kavitul.drcardio.utils.PrefHelper;
 
 public class PatientData extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "PatientData";
@@ -386,6 +387,9 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
             Toast.makeText(this, "Patient Name is required", Toast.LENGTH_LONG).show();
             return;
         }
+
+        int pdfCount = PrefHelper.getInt("PDFGenerateCount", 0);
+        PrefHelper.setInt("PDFGenerateCount", pdfCount+1);
 
         Intent intent = new Intent();
         setResult(RESULT_OK, intent);
@@ -726,7 +730,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     public boolean addJpgSignatureToGallery(Bitmap signature) {
         boolean result = false;
         try {
-            File photo = new File(getAlbumStorageDir("DrCardioDocument"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+            File photo = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
             deleteSingleFile(photo);
             saveBitmapToJPG(signature, photo);
             scanMediaFile(photo);
@@ -748,7 +752,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     public boolean addSvgSignatureToGallery(String signatureSvg) {
         boolean result = false;
         try {
-            File svgFile = new File(getAlbumStorageDir("DrCardioDocument"), String.format("PatientSignature.svg", System.currentTimeMillis()));
+            File svgFile = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("PatientSignature.svg", System.currentTimeMillis()));
             OutputStream stream = new FileOutputStream(svgFile);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
             writer.write(signatureSvg);
