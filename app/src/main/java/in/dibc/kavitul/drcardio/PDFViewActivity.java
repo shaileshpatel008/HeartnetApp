@@ -91,13 +91,13 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     protected void onResume() {
         super.onResume();
 
-        String filePath = "";
-        if(getIntent() != null) {
-            filePath = getIntent().getStringExtra("PDFPath");
-            Log.v("File Path :: ", ""+filePath);
-            Toast.makeText(PDFViewActivity.this, "PSD Path :: "+filePath, Toast.LENGTH_SHORT).show();
-            displayFromFiles(new File("file: "+filePath));
-        }
+//        String filePath = "";
+//        if(getIntent() != null) {
+//            filePath = getIntent().getStringExtra("PDFPath");
+//            Log.v("File Path :: ", ""+filePath);
+//            Toast.makeText(PDFViewActivity.this, "PSD Path :: "+filePath, Toast.LENGTH_SHORT).show();
+//            displayFromFiles(new File("file: "+filePath));
+//        }
     }
 
     @AfterViews
@@ -141,6 +141,8 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     }
 
     private void displayFromFiles(File filePath) {
+
+        pdfView = findViewById(R.id.pdfView);
         pdfFileName = "Test PDF Name"; //getFileName(Uri.parse(filePath.getPath()));
 
         pdfView.fromFile(filePath)
@@ -230,7 +232,14 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         if (requestCode == PERMISSION_CODE) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                launchPicker();
+                //launchPicker();
+                String filePath = "";
+                if(getIntent() != null) {
+                    filePath = getIntent().getStringExtra("PDFPath");
+                    Log.v("File Path :: ", ""+filePath);
+                    Toast.makeText(PDFViewActivity.this, "PSD Path :: "+filePath, Toast.LENGTH_SHORT).show();
+                    displayFromFiles(new File("file: "+filePath));
+                }
             }
         }
     }

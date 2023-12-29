@@ -85,6 +85,8 @@ dependencies {
 
     implementation 'com.codemybrainsout.onboarding:onboarder:1.0.4'
 
+//    implementation 'com.github.afreakyelf:Pdf-Viewer:2.0.4'
+
     //Glide
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     implementation 'com.github.bumptech.glide:annotations:4.14.2'

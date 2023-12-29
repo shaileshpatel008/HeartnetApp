@@ -71,16 +71,19 @@ public class StartupActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if( PrefHelper.getBoolean("isFirstTimeLoad", true)) {
-                    Intent intent = new Intent(StartupActivity.this, IntroductionActivity.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Intent intent = new Intent(StartupActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
+//                if( PrefHelper.getBoolean("isFirstTimeLoad", true)) {
+//                    Intent intent = new Intent(StartupActivity.this, IntroductionActivity.class);
+//                    startActivity(intent);
+//                    finish();
+//                } else {
+//                    Intent intent = new Intent(StartupActivity.this, MainActivity.class);
+//                    startActivity(intent);
+//                    finish();
+//                }
 
+                Intent intent = new Intent(StartupActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
             }
         }, SPLASH_TIME_OUT);
         /*BluetoothPermissions btPerm = new BluetoothPermissions(appbt.btHelper);

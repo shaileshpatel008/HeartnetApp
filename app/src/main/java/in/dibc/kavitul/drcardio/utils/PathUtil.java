@@ -17,6 +17,8 @@ import java.net.URISyntaxException;
  */
 
 public class PathUtil {
+
+    public static String FolderName = "DrCardioDocuments1";
     /*
      * Gets the file path of the given Uri.
      */

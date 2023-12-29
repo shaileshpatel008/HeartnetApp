@@ -64,6 +64,7 @@ import in.dibc.kavitul.drcardio.SupportClass.LocaleHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mLog;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.utils.PathUtil;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = "Settings_Activity";
@@ -699,7 +700,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         boolean result = false;
         try {
             //deleteFiles(new File(getAlbumStorageDir("Documents").getPath()).getPath());
-            File photo = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+            File photo = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
             deleteSingleFile(photo);
             saveBitmapToJPG(signature, photo);
             scanMediaFile(photo);
@@ -721,7 +722,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     public boolean addSvgSignatureToGallery(String signatureSvg) {
         boolean result = false;
         try {
-            File svgFile = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("DoctorSignature.svg", System.currentTimeMillis()));
+            File svgFile = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("DoctorSignature.svg", System.currentTimeMillis()));
             OutputStream stream = new FileOutputStream(svgFile);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
             writer.write(signatureSvg);

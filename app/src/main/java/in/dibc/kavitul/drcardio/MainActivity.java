@@ -189,10 +189,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }*/
 
-        //PrefHelper.setInt("PDFGenerateCount", PrefHelper.getInt("PDFGenerateCount", 0)+1);
         //Log.v("PDF GENERATE COUNT :: ", ""+PrefHelper.getInt("PDFGenerateCount", 0));
+        //PrefHelper.setInt("PDFGenerateCount", (PrefHelper.getInt("PDFGenerateCount", 0)+1));
         if(PrefHelper.getInt("PDFGenerateCount", 0) % 6 == 1) {
+            //Log.v("True", ""+PrefHelper.getInt("PDFGenerateCount", 0));
             rateAndReviewsDialog();
+        } else {
+            Log.v("False", ""+PrefHelper.getInt("PDFGenerateCount", 0));
         }
 
         if (settings.test_mode.equals("true")) {

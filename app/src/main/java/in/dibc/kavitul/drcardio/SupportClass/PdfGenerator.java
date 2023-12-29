@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import baseline_remove1.Baseline_remove1;
 import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.R;
+import in.dibc.kavitul.drcardio.utils.PathUtil;
 
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class PdfGenerator {
@@ -471,7 +472,8 @@ public class PdfGenerator {
 
         drawDoctorSignatureInfo(page_horz_start, page_vert_start, paint, page);
 
-        if(ecgData.patient_photo != null) {
+        Log.v("PDF GENERATOR Patient Photo :::: ", "" +ecgData.patient_photo);
+        if(!ecgData.patient_photo.equalsIgnoreCase("")) {
             drawPatientPhotoInfo(page_horz_start, page_vert_start, paint, page);
         }
         if(ecgData.patient_signature_photo != null) {
@@ -598,7 +600,7 @@ public class PdfGenerator {
         int lineno = drawTitleText("Patient Info", x, y, 0, paint, page);
         //Log.v("PDF IMAGE PATH :: ", ecgData.patient_photo);
         //File image = new File(ecgData.patient_signature_photo);
-        File image = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+        File image = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
         Log.v("PDF IMAGE PATH :: ", image.getPath());
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -616,7 +618,7 @@ public class PdfGenerator {
         int lineno = drawTitleText("Patient Info", x, y, 0, paint, page);
         //Log.v("PDF IMAGE PATH :: ", ecgData.patient_photo);
         //File image = new File(ecgData.patient_signature_photo);
-        File image = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+        File image = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("PatientSignature.jpg", System.currentTimeMillis()));
         Log.v("PDF IMAGE PATH :: ", image.getPath());
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         bmOptions.inMutable = true;
@@ -985,10 +987,12 @@ public class PdfGenerator {
         //bitmap.setWidth(60);
         //bitmap.setHeight(60);
 
-        bitmap = Bitmap.createScaledBitmap(
-                bitmap, 60, 60, true);
+        if(bitmap != null) {
+            bitmap = Bitmap.createScaledBitmap(
+                    bitmap, 60, 60, true);
 
-        page.getCanvas().drawBitmap(bitmap, x+150, 30, paint);
+            page.getCanvas().drawBitmap(bitmap, x+150, 30, paint);
+        }
 
         //page.getCanvas().drawBitmap(bitmap, /*x, y, paint*//*new Rect(0, 0, 40, 40)*/null, new RectF(0, 0, 40, 40), paint);
         return line_start;

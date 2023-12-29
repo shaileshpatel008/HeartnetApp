@@ -68,6 +68,8 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     private static final String TAG = "PatientData";
 
     public static final int REQUEST_IMAGE = 100;
+
+    String filePath = "";
     private final DatePickerDialog.OnDateSetListener myDateListener = new
             DatePickerDialog.OnDateSetListener() {
                 @Override
@@ -374,6 +376,12 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
         Log.v("Patient Comment :: ", ""+((EditText) findViewById(R.id.patient_comments)).getText().toString());
         ecgData.patient_comments = ((EditText) findViewById(R.id.patient_comments)).getText().toString();
         //ecgData.patient_photo = patientPhotoPath;
+        if(filePath != null) {
+            ecgData.patient_photo = filePath;
+        } else {
+            ecgData.patient_photo = "";
+        }
+
 
         RadioGroup r = findViewById(R.id.patient_sex);
         int id = r.getCheckedRadioButtonId();
@@ -389,7 +397,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
         }
 
         int pdfCount = PrefHelper.getInt("PDFGenerateCount", 0);
-        PrefHelper.setInt("PDFGenerateCount", pdfCount+1);
+        PrefHelper.setInt("PDFGenerateCount", (pdfCount+1));
 
         Intent intent = new Intent();
         setResult(RESULT_OK, intent);
@@ -469,9 +477,8 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
                     loadProfile(uri.toString());
 
                     //String filePath= PathUtil.getPath(PatientData.this, uri);
-                    String filePath= getPath(PatientData.this, uri);
+                    filePath= getPath(PatientData.this, uri);
                     Log.v("Patient Photo Path :::: ", filePath);
-                    ecgData.patient_photo = filePath;
                 } catch (IOException e) {
                     e.printStackTrace();
                 } /*catch (URISyntaxException e) {
@@ -730,7 +737,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     public boolean addJpgSignatureToGallery(Bitmap signature) {
         boolean result = false;
         try {
-            File photo = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+            File photo = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("PatientSignature.jpg", System.currentTimeMillis()));
             deleteSingleFile(photo);
             saveBitmapToJPG(signature, photo);
             scanMediaFile(photo);
@@ -752,7 +759,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     public boolean addSvgSignatureToGallery(String signatureSvg) {
         boolean result = false;
         try {
-            File svgFile = new File(getAlbumStorageDir("DrCardioNew4Documents"), String.format("PatientSignature.svg", System.currentTimeMillis()));
+            File svgFile = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("PatientSignature.svg", System.currentTimeMillis()));
             OutputStream stream = new FileOutputStream(svgFile);
             OutputStreamWriter writer = new OutputStreamWriter(stream);
             writer.write(signatureSvg);

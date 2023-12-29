@@ -206,9 +206,6 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 load_file_list();
             }
-            /*else {
-
-            }*/
         }
 
     }
