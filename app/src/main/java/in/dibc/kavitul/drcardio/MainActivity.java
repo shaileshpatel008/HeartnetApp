@@ -4,6 +4,8 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
 
+import static in.dibc.kavitul.drcardio.SupportClass.appbt.key;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -48,6 +50,7 @@ import androidx.core.content.ContextCompat;
 import com.gauravbhola.ripplepulsebackground.RipplePulseLayout;
 import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
 import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
+import com.google.android.gms.common.util.ArrayUtils;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.saadahmedsoft.popupdialog.PopupDialog;
 import com.saadahmedsoft.popupdialog.Styles;
@@ -67,6 +70,7 @@ import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.SupportClass.LocaleHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
 import in.dibc.kavitul.drcardio.widgets.RoundedImageView;
 
@@ -82,6 +86,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String cur_lang;
     private boolean testAck = false;
     int MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 4848;
+
+    private static final int PERMISSION_REQUEST_CODE = 200;
+
     ActivityResultLauncher<Intent> settingActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -110,7 +117,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //#Bhavesh Change
         isStoragePermissionGranted();
 
-        checkLocationPermission();
+
+
+        checkBluetoothPermission();
+        requestBluetoothPermission();
 
         /*if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -181,6 +191,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         getUserLocation();
 
+        checkLocationPermission();
+
         bubbleNavigation.setCurrentActiveItem(0);
 
         /*if (SDK_INT >= Build.VERSION_CODES.R) {
@@ -191,11 +203,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //Log.v("PDF GENERATE COUNT :: ", ""+PrefHelper.getInt("PDFGenerateCount", 0));
         //PrefHelper.setInt("PDFGenerateCount", (PrefHelper.getInt("PDFGenerateCount", 0)+1));
-        if(PrefHelper.getInt("PDFGenerateCount", 0) % 6 == 1) {
-            //Log.v("True", ""+PrefHelper.getInt("PDFGenerateCount", 0));
+        //if(PrefHelper.getInt("PDFGenerateCount", 0) % 6 == 1) {
+        //if( ArrayUtils.contains(PathUtil.reviewsContainsCount, PrefHelper.getInt("PDFGenerateCount", 0))) {
+        if(PrefHelper.getInt("PDFGenerateCount", 0) == 5) {
+//            Log.v("True", ""+PrefHelper.getInt("PDFGenerateCount", 0));
+            PrefHelper.setInt("PDFGenerateCount", 0);
             rateAndReviewsDialog();
         } else {
-            Log.v("False", ""+PrefHelper.getInt("PDFGenerateCount", 0));
+//            Log.v("False", ""+PrefHelper.getInt("PDFGenerateCount", 0));
         }
 
         if (settings.test_mode.equals("true")) {
@@ -996,6 +1011,82 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return;
             }
 
+            case PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0) {
+
+                    boolean bluetoothConnectAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean bluetoothScanAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+
+                    if (bluetoothConnectAccepted) {
+                        //Toast.makeText(MainActivity.this, "Permission Granted, Now you can access location data and camera.", Snackbar.LENGTH_LONG).show();
+                    } else {
+
+                        //Toast.makeText(MainActivity.this, "Permission Denied, You cannot connect with bluetooth to pairing.", Toast.LENGTH_LONG).show();
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            if (shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_CONNECT)) {
+                                showMessageOKCancel("You need to allow access to bluetooth connect permissions",
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                                    requestPermissions(new String[]{/*Manifest.permission.ACCESS_FINE_LOCATION,*/ Manifest.permission.BLUETOOTH_CONNECT},
+                                                            PERMISSION_REQUEST_CODE);
+                                                }
+                                            }
+                                        });
+                                return;
+                            }
+                        }
+                    }
+
+                    if (bluetoothScanAccepted) {
+                        //Toast.makeText(MainActivity.this, "Permission Granted, Now you can access location data and camera.", Snackbar.LENGTH_LONG).show();
+                    } else {
+
+                        //Toast.makeText(MainActivity.this, "Permission Denied, You cannot connect with bluetooth to pairing.", Toast.LENGTH_LONG).show();
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            if (shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_SCAN)) {
+                                showMessageOKCancel("You need to allow access to bluetooth connect permissions",
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                                    requestPermissions(new String[]{/*Manifest.permission.ACCESS_FINE_LOCATION,*/ Manifest.permission.BLUETOOTH_SCAN},
+                                                            PERMISSION_REQUEST_CODE);
+                                                }
+                                            }
+                                        });
+                                return;
+                            }
+                        }
+                    }
+                }
+                break;
+
         }
+    }
+
+    private boolean checkBluetoothPermission() {
+        int result = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT);
+        int result1 = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN);
+
+        return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestBluetoothPermission() {
+
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN}, PERMISSION_REQUEST_CODE);
+
+    }
+
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new android.app.AlertDialog.Builder(MainActivity.this)
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
     }
 }

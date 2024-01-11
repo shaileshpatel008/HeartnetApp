@@ -30,7 +30,7 @@ public class settings {
 
     public static void getSettings(){
         //Other Parameters Default Settings
-        test_mode = appbt.pref.getString("settings_test_mode", "");
+        test_mode = appbt.pref.getString("settings_test_mode", "false");
         csv = appbt.pref.getBoolean("csv", true);
         threeByteData = appbt.pref.getString("settings_threeByteData", "");
         auto_start = appbt.pref.getString("settings_auto_start", "");
