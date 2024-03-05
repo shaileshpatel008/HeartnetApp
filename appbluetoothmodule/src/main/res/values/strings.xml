@@ -2,6 +2,8 @@
     <string name="app_name">DIBC Bluetooth</string>
     <string name="title_activity_scan_connect">Connect to device</string>
 
+    <string name="pick_file">Pick file</string>
+    <string name="toast_pick_file_error">Unable to pick file. Check status of file manager.</string>
 
     <string name="yes">Yes</string>
     <string name="no">No</string>

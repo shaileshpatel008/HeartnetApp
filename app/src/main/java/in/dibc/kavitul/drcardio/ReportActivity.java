@@ -144,14 +144,28 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             }
         }*/
 
-        if (ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            Log.v(TAG,"1111 Permission is granted");
-            load_file_list();
-            //return true;
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this,Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG,"1111 Permission is granted");
+                load_file_list();
+                //return true;
+            } else {
+                Log.v(TAG,"1111 Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
+                //return false;
+            }
         } else {
-            Log.v(TAG,"1111 Permission is revoked");
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
-            //return false;
+            if (ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG,"1111 Permission is granted");
+                load_file_list();
+                //return true;
+            } else {
+                Log.v(TAG,"1111 Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
+                //return false;
+            }
         }
 
         //load_file_list();

@@ -20,6 +20,10 @@
     <string name="selectDevice">Please select a device to connect</string>
     <string name="tapContinue">Tap the continue botton to start operating your device.</string>
     <string name="scan_devices">Scan Devices</string>
+
+    <string name="pick_file">Pick file</string>
+    <string name="toast_pick_file_error">Unable to pick file. Check status of file manager.</string>
+
     <string-array name="bt_connect_error">
         <item>Your Device is not support bluetooth. You may use the application in demo mode but would not be able to work with an actual device.</item>
         <item>You need to enable bluetooth to conenct to a device. Would you like to enable it now?</item>

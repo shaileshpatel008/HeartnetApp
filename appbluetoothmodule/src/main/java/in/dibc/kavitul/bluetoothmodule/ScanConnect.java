@@ -43,6 +43,7 @@ public class ScanConnect extends AppCompatActivity {
     public Thread bluetoothDevicesThread;
     public static ImageView searchDevicesFAB;
     private ListView deviceListView;
+    private ImageView header_left_btn;
     public static ArrayList<BluetoothDevice> deviceArrayList;
     public static DeviceListArrayAdaptor deviceListAdapter;
     private AlertDialog alert;
@@ -62,6 +63,14 @@ public class ScanConnect extends AppCompatActivity {
 //        Intent intent = getIntent();
         checkLocation();
         initBluetoothScan();
+
+        header_left_btn = findViewById(R.id.header_left_btn);
+        header_left_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
     }
 
     private void checkLocation() {

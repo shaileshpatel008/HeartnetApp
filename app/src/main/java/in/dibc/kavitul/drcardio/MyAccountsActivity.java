@@ -42,11 +42,6 @@ import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
 import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
-import com.karumi.dexter.Dexter;
-import com.karumi.dexter.MultiplePermissionsReport;
-import com.karumi.dexter.PermissionToken;
-import com.karumi.dexter.listener.PermissionRequest;
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.saadahmedsoft.popupdialog.PopupDialog;
 import com.saadahmedsoft.popupdialog.Styles;
 import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener;
@@ -81,6 +76,8 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
     BubbleNavigationLinearView bubbleNavigation;
 
     LinearLayout llBack, llLoadData, llProfile, llSettings, llHelp, llShareApp, llFeedback, llReview;
+
+    TextView tvVersion;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -223,6 +220,10 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
                 openAppRating(MyAccountsActivity.this);
             }
         });
+
+        tvVersion = findViewById(R.id.tvVersion);
+        String versionName = BuildConfig.VERSION_NAME;
+        tvVersion.setText("Version "+versionName);
 
     }
 

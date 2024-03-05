@@ -18,9 +18,9 @@ public class BluetoothPermissions {
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION,
             //#Bhavesh Change
-            ,Manifest.permission.WRITE_EXTERNAL_STORAGE
+//            Manifest.permission.WRITE_EXTERNAL_STORAGE,
     };
 
     public List<String> listPermissionsToBeGranted = new ArrayList<>();
@@ -34,10 +34,10 @@ public class BluetoothPermissions {
             permissionsRequired = new String[]{
                     Manifest.permission.BLUETOOTH,
                     Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                    Manifest.permission.ACCESS_COARSE_LOCATION,
+//                    Manifest.permission.ACCESS_FINE_LOCATION,
                     //#Bhavesh Change
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.BLUETOOTH_CONNECT,
                     Manifest.permission.BLUETOOTH_SCAN,
             };

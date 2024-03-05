@@ -600,7 +600,8 @@ public class PdfGenerator {
         int lineno = drawTitleText("Patient Info", x, y, 0, paint, page);
         //Log.v("PDF IMAGE PATH :: ", ecgData.patient_photo);
         //File image = new File(ecgData.patient_signature_photo);
-        File image = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+        //File image = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+        File image = new File(getAlbumStorageDir(PathUtil.FolderName), String.format(settings.doctorSignatureFileName, System.currentTimeMillis()));
         Log.v("PDF IMAGE PATH :: ", image.getPath());
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -618,7 +619,8 @@ public class PdfGenerator {
         int lineno = drawTitleText("Patient Info", x, y, 0, paint, page);
         //Log.v("PDF IMAGE PATH :: ", ecgData.patient_photo);
         //File image = new File(ecgData.patient_signature_photo);
-        File image = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+        //File image = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+        File image = new File(getAlbumStorageDir(PathUtil.FolderName), String.format(settings.patientSignatureFileName, System.currentTimeMillis()));
         Log.v("PDF IMAGE PATH :: ", image.getPath());
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         bmOptions.inMutable = true;

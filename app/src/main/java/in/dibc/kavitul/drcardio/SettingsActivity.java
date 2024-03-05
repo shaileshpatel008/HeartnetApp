@@ -427,26 +427,50 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.img_profile:
             case R.id.img_plus:
-                Dexter.withActivity(this)
-                        .withPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .withListener(new MultiplePermissionsListener() {
-                            @Override
-                            public void onPermissionsChecked(MultiplePermissionsReport report) {
-                                if (report.areAllPermissionsGranted()) {
-                                    showImagePickerOptions();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    Dexter.withActivity(this)
+                            .withPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
+                            .withListener(new MultiplePermissionsListener() {
+                                @Override
+                                public void onPermissionsChecked(MultiplePermissionsReport report) {
+                                    if (report.areAllPermissionsGranted()) {
+                                        showImagePickerOptions();
+                                    }
+
+                                    if (report.isAnyPermissionPermanentlyDenied()) {
+                                        showSettingsDialog();
+                                    }
                                 }
 
-                                if (report.isAnyPermissionPermanentlyDenied()) {
-                                    showSettingsDialog();
+                                @Override
+                                public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                                    token.continuePermissionRequest();
                                 }
-                            }
+                            }).check();
+                    break;
+                } else {
+                    Dexter.withActivity(this)
+                            .withPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .withListener(new MultiplePermissionsListener() {
+                                @Override
+                                public void onPermissionsChecked(MultiplePermissionsReport report) {
+                                    if (report.areAllPermissionsGranted()) {
+                                        showImagePickerOptions();
+                                    }
 
-                            @Override
-                            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
-                                token.continuePermissionRequest();
-                            }
-                        }).check();
-                break;
+                                    if (report.isAnyPermissionPermanentlyDenied()) {
+                                        showSettingsDialog();
+                                    }
+                                }
+
+                                @Override
+                                public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                                    token.continuePermissionRequest();
+                                }
+                            }).check();
+                    break;
+                }
+
             case R.id.header_left_btn:
                 onBackPressed();
                 break;
@@ -631,6 +655,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
             } else {
                 System.out.println("file not Deleted :" + Uri.parse(fdelete.getPath()).getPath());
             }
+        } else {
+            System.out.println("file is not exists :");
         }
     }
 
@@ -699,8 +725,12 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     public boolean addJpgSignatureToGallery(Bitmap signature) {
         boolean result = false;
         try {
+            long time= System.currentTimeMillis();
+            String doctorSignatureFileName = time+".jpg";
+            settings.doctorSignatureFileName = doctorSignatureFileName;
             //deleteFiles(new File(getAlbumStorageDir("Documents").getPath()).getPath());
-            File photo = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+            //File photo = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("DoctorSignature.jpg", System.currentTimeMillis()));
+            File photo = new File(getAlbumStorageDir(PathUtil.FolderName), String.format(doctorSignatureFileName, System.currentTimeMillis()));
             deleteSingleFile(photo);
             saveBitmapToJPG(signature, photo);
             scanMediaFile(photo);

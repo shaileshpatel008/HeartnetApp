@@ -346,6 +346,17 @@
                         android:textSize="@dimen/_15sdp" />
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/tvVersion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="10dp"
+                    android:layout_marginTop="@dimen/_20sdp"
+                    android:gravity="center_horizontal"
+                    android:text="Version 1.0.0"
+                    android:textColor="@color/darkGrey"
+                    android:textSize="@dimen/_15sdp" />
+
             </LinearLayout>
         </ScrollView>
 

@@ -23,6 +23,7 @@ public class settings {
     public static ArrayList<String> gain_actual_values = new ArrayList(Arrays.asList(appbt.res.getStringArray(R.array.spinner_actual_gain)));
     public static ArrayList<String> report_values = new ArrayList(Arrays.asList(appbt.res.getStringArray(R.array.generate_report)));
 
+    public static String patientSignatureFileName = "", doctorSignatureFileName = "";
 
     public settings(){
         getSettings();

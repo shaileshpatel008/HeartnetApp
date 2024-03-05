@@ -1,6 +1,7 @@
 package in.dibc.kavitul.drcardio;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +31,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -40,12 +49,22 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import in.dibc.kavitul.bluetoothmodule.BluetoothPermissions;
 import in.dibc.kavitul.drcardio.Model.ecgData;
@@ -56,6 +75,7 @@ import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.ecgFilter;
 import in.dibc.kavitul.drcardio.SupportClass.mFile;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.widgets.VolleyMultipartRequest;
 
 public class NewEcgActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = "NewECGActivity";
@@ -86,6 +106,9 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
     private final DataHandlerThread dataHandlerThread = new DataHandlerThread();
     private LinearLayout ll_loading;
     // TODO: 2/2/21 try to use threadpool or thread factory for multithreading
+
+    String upload_URL = "https://rainbowline.soluspottechnolabs.com/api/uploadCardioPdf";
+    RequestQueue rQueue;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -723,6 +746,15 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                         Bundle params2 = new Bundle();
                         params2.putString(FirebaseAnalytics.Param.VALUE, "Report Generated from : "+ecgData.patinet_deviceid+" Device");
                         mFirebaseAnalytics.logEvent("ECG_Report_Generated", params2);
+
+                        ////88888888
+//                        // File UPLOAD
+//                        String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
+//                        String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+//                        File file = new File(filepath);
+//                        Log.v("Upload PDF File Name : ", appendFileName + "_" + ecgData.date_time + ".pdf");
+//                        Log.v("Upload Path :: ", filepath);
+//                        uploadPDF(appendFileName + "_" + ecgData.date_time + ".pdf", Uri.fromFile(file));
                     } else {
                         new AlertDialog.Builder(NewEcgActivity.this)
                                 .setTitle("Unable to generate report")
@@ -974,5 +1006,104 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         }
         super.onDestroy();
         dataHandlerThread.quit();
+    }
+
+    private void uploadPDF(final String pdfname, Uri pdffile){
+
+        ProgressDialog pd = new ProgressDialog(NewEcgActivity.this);
+        pd.setMessage("Please wait.. Syncing with cloud..");
+        pd.show();
+
+        InputStream iStream = null;
+        try {
+
+            iStream = getContentResolver().openInputStream(pdffile);
+            final byte[] inputData = getBytes(iStream);
+
+            VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, upload_URL,
+                    new Response.Listener<NetworkResponse>() {
+                        @Override
+                        public void onResponse(NetworkResponse response) {
+                            Log.d("ressssssoo",new String(response.data));
+                            String resultResponse = new String(response.data);
+                            rQueue.getCache().clear();
+                            try {
+                                JSONObject result = new JSONObject(resultResponse);
+                                String status = result.getString("status");
+                                String message = result.getString("message");
+
+                                pd.dismiss();
+
+                                if (status.equals("success")) {
+                                    // tell everybody you have succed upload image and post strings
+                                    Log.i("Messsage", message);
+                                } else {
+                                    Log.i("Unexpected", message);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+                            pd.dismiss();
+                        }
+                    }) {
+
+                /*
+                 * If you want to add more parameters with the image
+                 * you can do it here
+                 * here we have only one parameter with the image
+                 * which is tags
+                 * */
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<>();
+                    // params.put("tags", "ccccc");  add string parameters
+                    return params;
+                }
+
+                /*
+                 *pass files using below method
+                 * */
+                @Override
+                protected Map<String, DataPart> getByteData() {
+                    Map<String, DataPart> params = new HashMap<>();
+
+                    params.put("upload_file", new DataPart(pdfname ,inputData));
+                    return params;
+                }
+            };
+
+
+            volleyMultipartRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    400000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            rQueue = Volley.newRequestQueue(NewEcgActivity.this);
+            rQueue.add(volleyMultipartRequest);
+
+        } catch (FileNotFoundException e) {
+            pd.dismiss();
+            e.printStackTrace();
+        } catch (IOException e) {
+            pd.dismiss();
+            e.printStackTrace();
+        }
+    }
+
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
     }
 }

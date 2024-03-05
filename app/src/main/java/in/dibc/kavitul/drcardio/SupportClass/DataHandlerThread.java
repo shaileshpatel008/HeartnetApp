@@ -67,6 +67,7 @@ public class DataHandlerThread extends HandlerThread {
                         float[] channels = parseData.charArrayToChannels(dataChar, settings.test_mode.equals("true"));
 
 
+                        // Set base line
                         if (ecgData.sampleDataCount < ecgData.sampleDataLength) {
                             for (int ch = 0; ch < ecgData.NO_OF_CHANNELS; ch++) {
                                 ecgData.sample_data[ch][ecgData.sampleDataCount] = channels[ch] / Float.parseFloat(settings.actualGain);

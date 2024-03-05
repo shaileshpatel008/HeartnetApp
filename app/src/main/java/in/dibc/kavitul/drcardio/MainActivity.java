@@ -1,6 +1,7 @@
 package in.dibc.kavitul.drcardio;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.READ_MEDIA_IMAGES;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
 
@@ -17,6 +18,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -51,7 +53,18 @@ import com.gauravbhola.ripplepulsebackground.RipplePulseLayout;
 import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
 import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
 import com.google.android.gms.common.util.ArrayUtils;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.InstallState;
+import com.google.android.play.core.install.InstallStateUpdatedListener;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.InstallStatus;
+import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.play.core.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.kuassivi.component.RipplePulseRelativeLayout;
 import com.saadahmedsoft.popupdialog.PopupDialog;
 import com.saadahmedsoft.popupdialog.Styles;
 import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener;
@@ -105,7 +118,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     RipplePulseLayout rippleBackground;
 
+    RipplePulseRelativeLayout ripplePulseRelativeLayout;
+
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 98;
+
+    private static final int REQ_CODE_VERSION_UPDATE = 880;
+    private AppUpdateManager appUpdateManager;
+    private InstallStateUpdatedListener installStateUpdatedListener;
 
 
     @Override
@@ -116,8 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //#Bhavesh Change
         isStoragePermissionGranted();
-
-
+        isStoragePermissionGranted13();
 
         checkBluetoothPermission();
         requestBluetoothPermission();
@@ -148,7 +166,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }*/
 
         rippleBackground = findViewById(R.id.layout_ripplepulse);
-        rippleBackground.startRippleAnimation();
+        //rippleBackground.startRippleAnimation();
+
+        ripplePulseRelativeLayout = findViewById(R.id.pulseLayout);
+        ripplePulseRelativeLayout.startPulse();
+
 
         bubbleNavigation = findViewById(R.id.equal_navigation_bar);
         bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
@@ -171,6 +193,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }, 2000);*/
             }
         });
+
+        checkForAppUpdate();
     }
 
     @Override
@@ -218,6 +242,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
         }
+
+        checkNewAppVersionState();
     }
 
     private void requestPermission() {
@@ -273,6 +299,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 Log.v(TAG,"Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(TAG,"Permission is granted");
+            return true;
+        }
+    }
+
+    public  boolean isStoragePermissionGranted13() {
+        if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(READ_MEDIA_IMAGES)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG,"Permission is granted");
+                return true;
+            } else {
+                Log.v(TAG,"Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{READ_MEDIA_IMAGES}, 1);
                 return false;
             }
         }
@@ -381,6 +425,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 Log.d(TAG, "onActivityResult: not ok");
             }
+        } else if (requestCode == REQ_CODE_VERSION_UPDATE) {
+            if(resultCode == RESULT_OK) {
+                appbt.btHelper.connectedDevice = data.getParcelableExtra("connectedDevice");
+                //Setting the text view of the main activity with the device name i.e. beside the bluetooth icon
+                tryConnectTo();
+//                connectedToDevice();
+            } else {
+                //Log.d(TAG, "onActivityResult Unregistered: not ok");
+                Log.d(TAG,"Update flow failed! Result code: " + resultCode);
+                // If the update is cancelled or fails,
+                // you can request to start the update again.
+                unregisterInstallStateUpdListener();
+            }
         }
     }
 
@@ -481,31 +538,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void connectedToDevice() {
-        txt_connected_device_name.setClickable(false);
-        txt_connected_device_name.setEnabled(false);
-        txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
-        txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
-        txt_acquire_new_ecg.setVisibility(View.VISIBLE);
-        llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
-        rippleBackground.stopRippleAnimation();
-        menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
-        settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
-        settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
-        settings.saveSettings();
-        device_is_connected = 2;
-        appbt.conn = appbt.btHelper.connectionThread.getConnectedThread();
-        if (appbt.conn == null) {
-            disconnectFromDevice();
+        if(appbt.btHelper.connectedDevice.getName() != null) {
+            if(!appbt.btHelper.connectedDevice.getName().equalsIgnoreCase("null")) {
+                txt_connected_device_name.setClickable(false);
+                txt_connected_device_name.setEnabled(false);
+                txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
+                txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
+                txt_acquire_new_ecg.setVisibility(View.VISIBLE);
+                llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
+                //rippleBackground.stopRippleAnimation();
+                ripplePulseRelativeLayout.stopPulse();
+                menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
+                settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
+                settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
+                settings.saveSettings();
+                device_is_connected = 2;
+                appbt.conn = appbt.btHelper.connectionThread.getConnectedThread();
+                if (appbt.conn == null) {
+                    disconnectFromDevice();
+                } else {
+                    appbt.conn.btHelper = appbt.btHelper;
+                    checkHwVersion();
+                }
+
+                if (settings.test_mode.equals("true")) {
+                    txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
+                } else {
+                    txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
+                }
+            } else {
+                disconnectFromDevice();
+                Intent intent = new Intent(MainActivity.this, StartupActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
         } else {
-            appbt.conn.btHelper = appbt.btHelper;
-            checkHwVersion();
+            disconnectFromDevice();
+            Intent intent = new Intent(MainActivity.this, StartupActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         }
 
-        if (settings.test_mode.equals("true")) {
-            txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
-        } else {
-            txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
-        }
     }
 
     private void checkHwVersion() {
@@ -802,6 +875,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         PackageManager packageManager = getPackageManager();
                         Intent i = new Intent(Intent.ACTION_VIEW);
 
+//                        if(isAppInstalled("com.whatsapp")) {
+//                            try {
+//                                String phone = "+919638389333";
+//                                String url = "https://api.whatsapp.com/send?phone="+ phone +"&text=" + URLEncoder.encode("Hi!", "UTF-8");
+//                                i.setPackage("com.whatsapp");
+//                                i.setData(Uri.parse(url));
+//                                //if (i.resolveActivity(packageManager) != null) {
+//                                startActivity(i);
+//                                //}
+//                            } catch (Exception e){
+//                                e.printStackTrace();
+//                            }
+//                        } else if(isAppInstalled("com.whatsapp.w4b")) {
+//                            try {
+//                                String phone = "+919638389333";
+//                                String url = "https://api.whatsapp.com/send?phone="+ phone +"&text=" + URLEncoder.encode("Hi!", "UTF-8");
+//                                i.setPackage("com.whatsapp.w4b");
+//                                i.setData(Uri.parse(url));
+//                                //if (i.resolveActivity(packageManager) != null) {
+//                                startActivity(i);
+//                                //}
+//                            } catch (Exception ee){
+//                                ee.printStackTrace();
+//                            }
+//                        } else {
+//                            Toast.makeText(MainActivity.this, "WhatsApp application is not installed in your device.", Toast.LENGTH_SHORT).show();
+//                        }
+
                         try {
                             String phone = "+919638389333";
                             String url = "https://api.whatsapp.com/send?phone="+ phone +"&text=" + URLEncoder.encode("Hi!", "UTF-8");
@@ -811,7 +912,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             startActivity(i);
                             //}
                         } catch (Exception e){
-                            e.printStackTrace();
+                            try {
+                                String phone = "+919638389333";
+                                String url = "https://api.whatsapp.com/send?phone="+ phone +"&text=" + URLEncoder.encode("Hi!", "UTF-8");
+                                i.setPackage("com.whatsapp.w4b");
+                                i.setData(Uri.parse(url));
+                                //if (i.resolveActivity(packageManager) != null) {
+                                startActivity(i);
+                                //}
+                            } catch (Exception ee){
+                                Toast.makeText(MainActivity.this, "WhatsApp application is not installed in your device.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
@@ -824,6 +935,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         startActivity(intent);
                     }
                 });
+    }
+
+    private boolean isAppInstalled(String packageName) {
+        try {
+            getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            return true;
+        }
+        catch (PackageManager.NameNotFoundException ignored) {
+            return false;
+        }
     }
 
     private void rateAndReviewsDialog() {
@@ -939,6 +1060,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         disconnectFromDevice();
+        unregisterInstallStateUpdListener();
         super.onDestroy();
     }
 
@@ -1016,6 +1138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     boolean bluetoothConnectAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
                     boolean bluetoothScanAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    boolean bluetoothAdminAccepted = grantResults[2] == PackageManager.PERMISSION_GRANTED;
 
                     if (bluetoothConnectAccepted) {
                         //Toast.makeText(MainActivity.this, "Permission Granted, Now you can access location data and camera.", Snackbar.LENGTH_LONG).show();
@@ -1062,6 +1185,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         }
                     }
+
+                    if (bluetoothAdminAccepted) {
+                        //Toast.makeText(MainActivity.this, "Permission Granted, Now you can access location data and camera.", Snackbar.LENGTH_LONG).show();
+                    } else {
+
+                        //Toast.makeText(MainActivity.this, "Permission Denied, You cannot connect with bluetooth to pairing.", Toast.LENGTH_LONG).show();
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                showMessageOKCancel("You need to allow storage permission",
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                                    requestPermissions(new String[]{/*Manifest.permission.ACCESS_FINE_LOCATION,*/ Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                                            PERMISSION_REQUEST_CODE);
+                                                }
+                                            }
+                                        });
+                                return;
+                            }
+                        }
+                    }
                 }
                 break;
 
@@ -1071,13 +1217,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean checkBluetoothPermission() {
         int result = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT);
         int result1 = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN);
+        int result2 = ContextCompat.checkSelfPermission(getApplicationContext(), WRITE_EXTERNAL_STORAGE);
 
-        return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED;
+        return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED && result2 == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestBluetoothPermission() {
 
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN}, PERMISSION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
 
     }
 
@@ -1088,5 +1235,144 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setNegativeButton("Cancel", null)
                 .create()
                 .show();
+    }
+
+    private void checkForAppUpdate() {
+        // Creates instance of the manager.
+        appUpdateManager = AppUpdateManagerFactory.create(MainActivity.this);
+
+        // Returns an intent object that you use to check for an update.
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+
+        // Create a listener to track request state updates.
+        installStateUpdatedListener = new InstallStateUpdatedListener() {
+            @Override
+            public void onStateUpdate(InstallState installState) {
+                // Show module progress, log state, or install the update.
+                if (installState.installStatus() == InstallStatus.DOWNLOADED)
+                    // After the update is downloaded, show a notification
+                    // and request user confirmation to restart the app.
+                    popupSnackbarForCompleteUpdateAndUnregister();
+            }
+        };
+
+        // Checks that the platform will allow the specified type of update.
+        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                // Request the update.
+                if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+
+                    // Before starting an update, register a listener for updates.
+                    appUpdateManager.registerListener(installStateUpdatedListener);
+                    // Start an update.
+                    startAppUpdateFlexible(appUpdateInfo);
+                } else if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) ) {
+                    // Start an update.
+                    startAppUpdateImmediate(appUpdateInfo);
+                }
+            }
+        });
+    }
+
+    private void startAppUpdateImmediate(AppUpdateInfo appUpdateInfo) {
+        try {
+            appUpdateManager.startUpdateFlowForResult(
+                    appUpdateInfo,
+                    AppUpdateType.IMMEDIATE,
+                    // The current activity making the update request.
+                    this,
+                    // Include a request code to later monitor this update request.
+                    MainActivity.REQ_CODE_VERSION_UPDATE);
+        } catch (IntentSender.SendIntentException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void startAppUpdateFlexible(AppUpdateInfo appUpdateInfo) {
+        try {
+            appUpdateManager.startUpdateFlowForResult(
+                    appUpdateInfo,
+                    AppUpdateType.IMMEDIATE,
+                    // The current activity making the update request.
+                    this,
+                    // Include a request code to later monitor this update request.
+                    MainActivity.REQ_CODE_VERSION_UPDATE);
+        } catch (IntentSender.SendIntentException e) {
+            e.printStackTrace();
+            unregisterInstallStateUpdListener();
+        }
+    }
+
+    /**
+     * Displays the snackbar notification and call to action.
+     * Needed only for Flexible app update
+     */
+    private void popupSnackbarForCompleteUpdateAndUnregister() {
+        /*Snackbar snackbar =
+                Snackbar.make(MainActivity.this, "Update Downloaded", Snackbar.LENGTH_INDEFINITE)
+        snackbar.setAction("Restart", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                appUpdateManager.completeUpdate();
+            }
+        });
+        snackbar.setActionTextColor(getResources().getColor(R.color.colorPrimary));
+        snackbar.show();*/
+
+        displayAlertUpdateComplete();
+
+        unregisterInstallStateUpdListener();
+    }
+
+    private void displayAlertUpdateComplete() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("App Update Downloaded")
+                .setCancelable(false)
+                .setPositiveButton("Restart", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        appUpdateManager.completeUpdate();
+                    }
+                });
+//                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+//                        dialog.cancel();
+//                    }
+//                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /**
+     * Checks that the update is not stalled during 'onResume()'.
+     * However, you should execute this check at all app entry points.
+     */
+    private void checkNewAppVersionState() {
+        appUpdateManager
+                .getAppUpdateInfo()
+                .addOnSuccessListener(
+                        appUpdateInfo -> {
+                            //FLEXIBLE:
+                            // If the update is downloaded but not installed,
+                            // notify the user to complete the update.
+                            if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                                popupSnackbarForCompleteUpdateAndUnregister();
+                            }
+
+                            //IMMEDIATE:
+                            if (appUpdateInfo.updateAvailability()
+                                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                                // If an in-app update is already running, resume the update.
+                                startAppUpdateImmediate(appUpdateInfo);
+                            }
+                        });
+
+    }
+
+    /**
+     * Needed only for FLEXIBLE update
+     */
+    private void unregisterInstallStateUpdListener() {
+        if (appUpdateManager != null && installStateUpdatedListener != null)
+            appUpdateManager.unregisterListener(installStateUpdatedListener);
     }
 }

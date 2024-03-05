@@ -60,6 +60,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import in.dibc.kavitul.drcardio.Model.ecgData;
+import in.dibc.kavitul.drcardio.SupportClass.settings;
 import in.dibc.kavitul.drcardio.image_picker.ImagePicker;
 import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
@@ -171,25 +172,48 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
                 break;
             case R.id.img_profile:
             case R.id.img_plus:
-                Dexter.withActivity(this)
-                        .withPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .withListener(new MultiplePermissionsListener() {
-                            @Override
-                            public void onPermissionsChecked(MultiplePermissionsReport report) {
-                                if (report.areAllPermissionsGranted()) {
-                                    showImagePickerOptions();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    Dexter.withActivity(this)
+                            .withPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
+                            .withListener(new MultiplePermissionsListener() {
+                                @Override
+                                public void onPermissionsChecked(MultiplePermissionsReport report) {
+                                    if (report.areAllPermissionsGranted()) {
+                                        showImagePickerOptions();
+                                    }
+
+                                    if (report.isAnyPermissionPermanentlyDenied()) {
+                                        showSettingsDialog();
+                                    }
                                 }
 
-                                if (report.isAnyPermissionPermanentlyDenied()) {
-                                    showSettingsDialog();
+                                @Override
+                                public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                                    token.continuePermissionRequest();
                                 }
-                            }
+                            }).check();
+                } else {
+                    Dexter.withActivity(this)
+                            .withPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .withListener(new MultiplePermissionsListener() {
+                                @Override
+                                public void onPermissionsChecked(MultiplePermissionsReport report) {
+                                    if (report.areAllPermissionsGranted()) {
+                                        showImagePickerOptions();
+                                    }
 
-                            @Override
-                            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
-                                token.continuePermissionRequest();
-                            }
-                        }).check();
+                                    if (report.isAnyPermissionPermanentlyDenied()) {
+                                        showSettingsDialog();
+                                    }
+                                }
+
+                                @Override
+                                public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                                    token.continuePermissionRequest();
+                                }
+                            }).check();
+                }
+
                 break;
         }
 
@@ -737,7 +761,11 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     public boolean addJpgSignatureToGallery(Bitmap signature) {
         boolean result = false;
         try {
-            File photo = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+            long time= System.currentTimeMillis();
+            String patientSignatureFileName = time+".jpg";
+            settings.patientSignatureFileName = patientSignatureFileName;
+            //File photo = new File(getAlbumStorageDir(PathUtil.FolderName), String.format("PatientSignature.jpg", System.currentTimeMillis()));
+            File photo = new File(getAlbumStorageDir(PathUtil.FolderName), String.format(patientSignatureFileName, System.currentTimeMillis()));
             deleteSingleFile(photo);
             saveBitmapToJPG(signature, photo);
             scanMediaFile(photo);
