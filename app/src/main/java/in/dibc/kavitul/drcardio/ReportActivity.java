@@ -89,6 +89,9 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             @Override
             public void onClick(View v) {
                 onBackPressed();
+//                Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
+//                intent.putExtra("PDFPath", "/storage/emulated/0/Documents/Dr.cardio/Reports/Test_2024_03_14_11_23.pdf");
+//                startActivity(intent);
             }
         });
 
@@ -237,11 +240,12 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        openPDFFile(file_names.get(position));
-                        /*String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position) + ".pdf";
+                        //openPDFFile(file_names.get(position));
+                        String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position) + ".pdf";
                         Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
                         intent.putExtra("PDFPath", filePath);
-                        startActivity(intent);*/
+                        intent.putExtra("FileName", file_names.get(position) + ".pdf");
+                        startActivity(intent);
                         break;
                     case 1:
                         shareFile(position);

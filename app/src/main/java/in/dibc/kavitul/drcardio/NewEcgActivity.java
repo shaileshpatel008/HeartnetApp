@@ -810,17 +810,23 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         //#Bhavesh Change
         /*String fileName = appendFileName + "_" + ecgData.date_time + ".pdf";
         File pdfFile = new File(mFile.getDirFile(this,mFile.DIR_REPORT), fileName);*/
-        String mimeType = "application/pdf";
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            Uri uri = FileProvider.getUriForFile(getBaseContext(), getApplicationContext().getPackageName() + ".provider", file);
-            intent.setDataAndType(uri, mimeType);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(intent, "Open PDF report using.."));
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(getApplicationContext(), "Unable to open report. make sure your phone has a PDF viewer installed. Report file: "+ file, Toast.LENGTH_LONG).show();
-        }
+//        String mimeType = "application/pdf";
+//        try {
+//            Intent intent = new Intent(Intent.ACTION_VIEW);
+//            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+//            Uri uri = FileProvider.getUriForFile(getBaseContext(), getApplicationContext().getPackageName() + ".provider", file);
+//            intent.setDataAndType(uri, mimeType);
+//            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//            startActivity(Intent.createChooser(intent, "Open PDF report using.."));
+//        } catch (ActivityNotFoundException e) {
+//            Toast.makeText(getApplicationContext(), "Unable to open report. make sure your phone has a PDF viewer installed. Report file: "+ file, Toast.LENGTH_LONG).show();
+//        }
+
+        //String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+        intent.putExtra("PDFPath", filepath);
+        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
+        startActivity(intent);
     }
 
     public void openPatientForm(){

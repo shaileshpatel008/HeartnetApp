@@ -100,6 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean testAck = false;
     int MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 4848;
 
+    boolean isDeviceConnectedFT = false;
+
     private static final int PERMISSION_REQUEST_CODE = 200;
 
     ActivityResultLauncher<Intent> settingActivityResultLauncher = registerForActivityResult(
@@ -538,33 +540,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void connectedToDevice() {
+
         if(appbt.btHelper.connectedDevice.getName() != null) {
             if(!appbt.btHelper.connectedDevice.getName().equalsIgnoreCase("null")) {
-                txt_connected_device_name.setClickable(false);
-                txt_connected_device_name.setEnabled(false);
-                txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
-                txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
-                txt_acquire_new_ecg.setVisibility(View.VISIBLE);
-                llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
-                //rippleBackground.stopRippleAnimation();
-                ripplePulseRelativeLayout.stopPulse();
-                menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
-                settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
-                settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
-                settings.saveSettings();
-                device_is_connected = 2;
-                appbt.conn = appbt.btHelper.connectionThread.getConnectedThread();
-                if (appbt.conn == null) {
-                    disconnectFromDevice();
-                } else {
-                    appbt.conn.btHelper = appbt.btHelper;
-                    checkHwVersion();
-                }
+                if(appbt.btHelper.connectedDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+                    txt_connected_device_name.setClickable(false);
+                    txt_connected_device_name.setEnabled(false);
+                    txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
+                    txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
+                    txt_acquire_new_ecg.setVisibility(View.VISIBLE);
+                    llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
+                    //rippleBackground.stopRippleAnimation();
+                    ripplePulseRelativeLayout.stopPulse();
+                    menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
+                    settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
+                    settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
+                    settings.saveSettings();
+                    device_is_connected = 2;
+                    appbt.conn = appbt.btHelper.connectionThread.getConnectedThread();
+                    if (appbt.conn == null) {
+                        disconnectFromDevice();
+                    } else {
+                        appbt.conn.btHelper = appbt.btHelper;
+                        checkHwVersion();
+                    }
 
-                if (settings.test_mode.equals("true")) {
-                    txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
+                    if (settings.test_mode.equals("true")) {
+                        txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
+                    } else {
+                        txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
+                    }
                 } else {
-                    txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
+//                    disconnectFromDevice();
+//                    appbt.btHelper.connectionThread = new AppBluetoothConnectionThread(appbt.btHelper.connectedDevice, appbt.btHelper);
+//                    appbt.btHelper.connectionThread.start();
+
+//                    if(isDeviceConnectedFT = false) {
+//                        new Handler().postDelayed(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                isDeviceConnectedFT = true;
+//                                tryConnectTo();
+//
+//                            }
+//                        }, 5000);
+//                    } else {
+//                        disconnectFromDevice();
+//
+//                    }
+
+//                    tryConnectTo();
+
+                    if(isDeviceConnectedFT == false) {
+                        isDeviceConnectedFT = true;
+                        startScanConnect();
+                    } else {
+                        new Handler().postDelayed(
+                                new Runnable() {
+                                    public void run() {
+                                        appbt.btHelper.connectionThread = new AppBluetoothConnectionThread(appbt.btHelper.connectedDevice, appbt.btHelper);
+                                        appbt.btHelper.connectionThread.start();
+                                    }
+                                },
+                                2000);
+                    }
+
+
                 }
             } else {
                 disconnectFromDevice();
@@ -578,7 +619,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         }
-
     }
 
     private void checkHwVersion() {
@@ -690,6 +730,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void disconnectFromDevice() {
+//        isDeviceConnectedFT = false;
         waitingForVersionResponse = false;
         if (appbt.btHelper.connectedThread != null) {
             if (appbt.btHelper.connectedThread.bluetoothSocket != null && appbt.btHelper.connectedThread.bluetoothSocket.isConnected()) {
@@ -761,6 +802,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             txt_connected_device_name.setClickable(true);
             txt_connected_device_name.setEnabled(true);
             txt_connected_device_name.setText(appbt.res.getString(R.string.click_here_to_connect));  //Display that we need to click to connect to a bluetooth device beside the bluetooth icon.
+            isDeviceConnectedFT = false;
         }
     }
 
