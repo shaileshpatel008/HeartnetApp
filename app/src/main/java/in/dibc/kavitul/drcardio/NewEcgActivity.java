@@ -537,29 +537,45 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
 
             case R.id.fab_generate_report: // on generate report button click
 
-                new AlertDialog.Builder(this)
-                        .setTitle("Generate report?")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                if (
-                                        ecgData.patient_name != null && !ecgData.patient_name.equals("") &&
-                                                ecgData.patient_name != null && !ecgData.patient_name.equals("")
-                                ) {
-                                    ll_loading.setVisibility(View.VISIBLE);
-                                    new Handler().postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            generateReport();
-                                        }
-                                    }, 500);
-                                } else {
-                                    openPatientFormToGenerateReport = true;
-                                    openPatientForm();
-                                }
-                            }
-                        }).setNegativeButton(R.string.cancel, null)
-                        .create()
-                        .show();
+//                new AlertDialog.Builder(this)
+//                        .setTitle("Generate report?")
+//                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+//                            public void onClick(DialogInterface dialog, int id) {
+//                                if (
+//                                        ecgData.patient_name != null && !ecgData.patient_name.equals("") &&
+//                                                ecgData.patient_name != null && !ecgData.patient_name.equals("")
+//                                ) {
+//                                    ll_loading.setVisibility(View.VISIBLE);
+//                                    new Handler().postDelayed(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            generateReport();
+//                                        }
+//                                    }, 500);
+//                                } else {
+//                                    openPatientFormToGenerateReport = true;
+//                                    openPatientForm();
+//                                }
+//                            }
+//                        }).setNegativeButton(R.string.cancel, null)
+//                        .create()
+//                        .show();
+
+                if (
+                        ecgData.patient_name != null && !ecgData.patient_name.equals("") &&
+                                ecgData.patient_name != null && !ecgData.patient_name.equals("")
+                ) {
+                    ll_loading.setVisibility(View.VISIBLE);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            generateReport();
+                        }
+                    }, 500);
+                } else {
+                    openPatientFormToGenerateReport = true;
+                    openPatientForm();
+                }
 
                 break;
         }
@@ -741,11 +757,23 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
 
                     ll_loading.setVisibility(View.GONE);
                     if (isGenerated[0]) {
-                        displayAlertToView();
+                        //displayAlertToView();
+
                         FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(NewEcgActivity.this);
                         Bundle params2 = new Bundle();
                         params2.putString(FirebaseAnalytics.Param.VALUE, "Report Generated from : "+ecgData.patinet_deviceid+" Device");
                         mFirebaseAnalytics.logEvent("ECG_Report_Generated", params2);
+
+                        String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
+                        String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+                        File file = new File(filepath);//here schedule1.pdf is the pdf file name which is keep in assets folder.
+
+                        //String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+                        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+                        intent.putExtra("PDFPath", filepath);
+                        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
+                        startActivity(intent);
+                        finish();
 
                         ////88888888
 //                        // File UPLOAD
