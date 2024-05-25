@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="in.dibc.kavitul.drcardio">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
@@ -65,6 +66,9 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".MyAccountsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SignInActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".NewHRVActivity"

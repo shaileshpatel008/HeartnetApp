@@ -67,6 +67,7 @@ import in.dibc.kavitul.drcardio.SupportClass.LocaleHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mLog;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.utils.PrefHelper;
 
 public class MyAccountsActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = "My_Accounts_Activity";
@@ -75,7 +76,7 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
 
     BubbleNavigationLinearView bubbleNavigation;
 
-    LinearLayout llBack, llLoadData, llProfile, llSettings, llHelp, llShareApp, llFeedback, llReview;
+    LinearLayout llBack, llLoadData, llProfile, llSettings, llHelp, llShareApp, llFeedback, llReview, llSignout;
 
     TextView tvVersion;
 
@@ -221,6 +222,35 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
             }
         });
 
+        llSignout = findViewById(R.id.llSignout);
+        llSignout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(MyAccountsActivity.this)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle("Sign out?")
+                        .setMessage("Are you sure you want to sign out from the application?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                PrefHelper.setBoolean("isUserLoggedIn", false);
+                                PrefHelper.setString("UserName", "");
+                                PrefHelper.setString("UserEmail", "");
+                                PrefHelper.setString("Token", "");
+                                PrefHelper.deleteAllPreferences();
+                                Intent intent = new Intent(MyAccountsActivity.this, SignInActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+
+            }
+        });
+
         tvVersion = findViewById(R.id.tvVersion);
         String versionName = BuildConfig.VERSION_NAME;
         tvVersion.setText("Version "+versionName);
@@ -271,8 +301,7 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
 
         // if GP not present on device, open web browser
         if (!marketFound) {
-            Intent webIntent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("https://play.google.com/store/apps/details?id="+appId));
+            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="+appId));
             context.startActivity(webIntent);
         }
     }

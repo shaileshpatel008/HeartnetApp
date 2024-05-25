@@ -11,6 +11,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -31,11 +32,14 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +53,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.gauravbhola.ripplepulsebackground.RipplePulseLayout;
 import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
 import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
@@ -69,20 +79,28 @@ import com.saadahmedsoft.popupdialog.PopupDialog;
 import com.saadahmedsoft.popupdialog.Styles;
 import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import in.dibc.kavitul.bluetoothmodule.AppBluetoothConnectionThread;
 import in.dibc.kavitul.bluetoothmodule.BluetoothPermissions;
 import in.dibc.kavitul.bluetoothmodule.ScanConnect;
+import in.dibc.kavitul.drcardio.Adapter.ItemListViewAdapter;
 import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.SupportClass.LocaleHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.utils.GPSTracker;
 import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
 import in.dibc.kavitul.drcardio.widgets.RoundedImageView;
@@ -93,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView menu_newecg, menu_csv, menu_hrv, txt_acquire_new_ecg;
     LinearLayout menu_loaddata, menu_reports, menu_settings, menu_help, menu_new_ecg, llAcquireNewECG, llHelp;
     ImageView img_menu_newecg, img_menu_loaddata, img_menu_reports, img_menu_settings, img_menu_help;
-    TextView txt_connected_device_name, txt_load_data;
+    TextView txt_connected_device_name, txt_load_data, tvStaffName;
     int device_is_connected = 0;
     private Handler mHandler;
     private String cur_lang;
@@ -141,6 +159,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         checkBluetoothPermission();
         requestBluetoothPermission();
+
+//        JSONObject jDeviceInfo = new JSONObject();
+//        try {
+//            jDeviceInfo.put("OS version", System.getProperty("os.version"));
+//            jDeviceInfo.put("API Level", android.os.Build.VERSION.SDK_INT);
+//            jDeviceInfo.put("Device", android.os.Build.DEVICE);
+//            jDeviceInfo.put("Model", android.os.Build.MODEL );
+//            jDeviceInfo.put("FullDeviceInfo", Build.BRAND+" "+android.os.Build.MODEL);
+//            Log.v("Device Informations :: ", jDeviceInfo.toString());
+//        } catch (JSONException e) {
+//            throw new RuntimeException(e);
+//        }
 
         /*if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -544,32 +574,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(appbt.btHelper.connectedDevice.getName() != null) {
             if(!appbt.btHelper.connectedDevice.getName().equalsIgnoreCase("null")) {
                 if(appbt.btHelper.connectedDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
-                    txt_connected_device_name.setClickable(false);
-                    txt_connected_device_name.setEnabled(false);
-                    txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
-                    txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
-                    txt_acquire_new_ecg.setVisibility(View.VISIBLE);
-                    llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
-                    //rippleBackground.stopRippleAnimation();
-                    ripplePulseRelativeLayout.stopPulse();
-                    menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
-                    settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
-                    settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
-                    settings.saveSettings();
-                    device_is_connected = 2;
-                    appbt.conn = appbt.btHelper.connectionThread.getConnectedThread();
-                    if (appbt.conn == null) {
-                        disconnectFromDevice();
+
+                    String lastSavedDeviceName = PrefHelper.getString("SavedDeviceName", "");
+                    if(lastSavedDeviceName.equalsIgnoreCase(ecgData.patinet_deviceid)) {
+                        PrefHelper.setString("SavedDeviceName", ecgData.patinet_deviceid);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                txt_connected_device_name.setClickable(false);
+                                txt_connected_device_name.setEnabled(false);
+                                txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
+                                txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
+                                txt_acquire_new_ecg.setVisibility(View.VISIBLE);
+                                llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
+                                //rippleBackground.stopRippleAnimation();
+                                ripplePulseRelativeLayout.stopPulse();
+                                menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
+                                settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
+                                settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
+                                settings.saveSettings();
+                                device_is_connected = 2;
+                                appbt.conn = appbt.btHelper.connectionThread.getConnectedThread();
+                                if (appbt.conn == null) {
+                                    disconnectFromDevice();
+                                } else {
+                                    appbt.conn.btHelper = appbt.btHelper;
+                                    checkHwVersion();
+                                }
+
+                                if (settings.test_mode.equals("true")) {
+                                    txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
+                                } else {
+                                    txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
+                                }
+                            }
+                        }, 2000);
                     } else {
-                        appbt.conn.btHelper = appbt.btHelper;
-                        checkHwVersion();
+                        callCheckDeviceApi();
                     }
 
-                    if (settings.test_mode.equals("true")) {
-                        txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
-                    } else {
-                        txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
-                    }
+
                 } else {
 //                    disconnectFromDevice();
 //                    appbt.btHelper.connectionThread = new AppBluetoothConnectionThread(appbt.btHelper.connectedDevice, appbt.btHelper);
@@ -764,6 +808,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         menu_settings = findViewById(R.id.menu_settings);
         menu_help = findViewById(R.id.menu_help);
         menu_new_ecg = findViewById(R.id.menu_new_ecg);
+        tvStaffName = findViewById(R.id.tvStaffName);
         img_menu_newecg = findViewById(R.id.txt_new_ecg_icon);
         img_menu_loaddata = findViewById(R.id.txt_load_data_icon);
         img_menu_reports = findViewById(R.id.txt_reports_icon);
@@ -791,6 +836,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txt_acquire_new_ecg.setOnClickListener(this);
         llAcquireNewECG.setOnClickListener(this);
         llHelp.setOnClickListener(this);
+
+        if(PrefHelper.getString("UserName", "") != null) {
+            tvStaffName.setText(PrefHelper.getString("UserName", ""));
+        }
+
         setNewECGbuttonText();
     }
 
@@ -1416,5 +1466,134 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void unregisterInstallStateUpdListener() {
         if (appUpdateManager != null && installStateUpdatedListener != null)
             appUpdateManager.unregisterListener(installStateUpdatedListener);
+    }
+
+    private void callCheckDeviceApi() {
+
+        ProgressDialog pd = new ProgressDialog(MainActivity.this);
+        pd.setMessage("Validating device...");
+        pd.setCancelable(false);
+        pd.show();
+
+        // url to post our data
+        String url = "https://drcadio.soluspottechnolabs.com/api/auth-device?device_id="+ecgData.patinet_deviceid;
+//        loadingPB.setVisibility(View.VISIBLE);
+
+        // creating a new variable for our request queue
+        RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+
+        // on below line we are calling a string
+        // request method to post the data to our API
+        // in this we are calling a post method.
+        StringRequest request = new StringRequest(Request.Method.GET, url, new com.android.volley.Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                // inside on response method we are
+                // hiding our progress bar
+                // and setting data to edit text as empty
+                //loadingPB.setVisibility(View.GONE);
+
+                // on below line we are displaying a success toast message.
+
+                try {
+                    // on below line we are parsing the response
+                    // to json object to extract data from it.
+                    JSONObject respObj = new JSONObject(response);
+                    Log.v("Response :: ", respObj.toString());
+
+                    if(respObj.getString("status").equalsIgnoreCase("success")) {
+                        Log.v("List Count :: ", ""+respObj.getJSONArray("success_data").length());
+                        pd.dismiss();
+
+                        PrefHelper.setString("SavedDeviceName", ecgData.patinet_deviceid);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                txt_connected_device_name.setClickable(false);
+                                txt_connected_device_name.setEnabled(false);
+                                txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
+                                txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
+                                txt_acquire_new_ecg.setVisibility(View.VISIBLE);
+                                llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
+                                //rippleBackground.stopRippleAnimation();
+                                ripplePulseRelativeLayout.stopPulse();
+                                menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
+                                settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
+                                settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
+                                settings.saveSettings();
+                                device_is_connected = 2;
+                                appbt.conn = appbt.btHelper.connectionThread.getConnectedThread();
+                                if (appbt.conn == null) {
+                                    disconnectFromDevice();
+                                } else {
+                                    appbt.conn.btHelper = appbt.btHelper;
+                                    checkHwVersion();
+                                }
+
+                                if (settings.test_mode.equals("true")) {
+                                    txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
+                                } else {
+                                    txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
+                                }
+                            }
+                        }, 2000);
+                    } else {
+                        pd.dismiss();
+                        PrefHelper.setString("SavedDeviceName", ecgData.patinet_deviceid);
+                        disconnectFromDevice();
+                        //Toast.makeText(MainActivity.this, respObj.getString("error_data").toString(), Toast.LENGTH_SHORT).show();
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Device is not registered")
+                                .setMessage(respObj.getString("error_data").toString())
+                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+
+                                    }
+                                })
+                                .create()
+                                .show();
+                    }
+                } catch (JSONException e) {
+                    pd.dismiss();
+                    throw new RuntimeException(e);
+                }
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // method to handle errors.
+                Toast.makeText(MainActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                String token = PrefHelper.getString("Token", "");
+                Log.v("Token :: ", token.toString());
+                Map<String, String> params = new HashMap<String, String>();
+//                    params.put("Content-Type", "multipart/form-data; charset=UTF-8");
+                params.put("Authorization", "Bearer "+token);
+                Log.v("Authorization :: ", params.toString());
+                return params;
+            }
+            @Override
+            protected Map<String, String> getParams() {
+                // below line we are creating a map for
+                // storing our values in key and value pair.
+                Map<String, String> params = new HashMap<String, String>();
+
+//                params.put("email", edtUserName.getText().toString());
+//                params.put("password", edtPassword.getText().toString());
+
+                Log.v("Request :: ", params.toString());
+
+                // at last we are
+                // returning our params.
+                return params;
+            }
+        };
+        // below line is to make
+        // a json object request.
+        queue.add(request);
     }
 }

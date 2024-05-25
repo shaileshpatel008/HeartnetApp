@@ -3,6 +3,7 @@ package in.dibc.kavitul.drcardio;
 import static android.os.Build.VERSION.SDK_INT;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,8 +35,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
 import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,17 +54,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import in.dibc.kavitul.drcardio.Adapter.ItemListViewAdapter;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mFile;
+import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.utils.PrefHelper;
 
 public class ReportActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ReportActivity";
     ListView file_names_list;
-    ArrayList<String> file_names;
+    ArrayList<String> file_names = new ArrayList<>();
+    ArrayList<String> filePathList = new ArrayList<>();
 
     TextView tvNoReports;
 
@@ -149,27 +165,29 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(this,Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
-                Log.v(TAG,"1111 Permission is granted");
-                load_file_list();
-                //return true;
-            } else {
-                Log.v(TAG,"1111 Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
-                //return false;
-            }
-        } else {
-            if (ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                Log.v(TAG,"1111 Permission is granted");
-                load_file_list();
-                //return true;
-            } else {
-                Log.v(TAG,"1111 Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
-                //return false;
-            }
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            if (ActivityCompat.checkSelfPermission(this,Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+//                Log.v(TAG,"1111 Permission is granted");
+//                load_file_list();
+//                //return true;
+//            } else {
+//                Log.v(TAG,"1111 Permission is revoked");
+//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
+//                //return false;
+//            }
+//        } else {
+//            if (ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+//                Log.v(TAG,"1111 Permission is granted");
+//                load_file_list();
+//                //return true;
+//            } else {
+//                Log.v(TAG,"1111 Permission is revoked");
+//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
+//                //return false;
+//            }
+//        }
+
+        callGetReportsECGsListApi();
 
         //load_file_list();
 
@@ -192,7 +210,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
 
-        getReportsCount();
+//        getReportsCount();
     }
 
     private ArrayList<String> getReportsCount() {
@@ -241,9 +259,15 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
                 switch (which) {
                     case 0:
                         //openPDFFile(file_names.get(position));
-                        String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position) + ".pdf";
+
+//                        String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position) + ".pdf";
+//                        Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
+//                        intent.putExtra("PDFPath", filePath);
+//                        intent.putExtra("FileName", file_names.get(position) + ".pdf");
+//                        startActivity(intent);
+
                         Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
-                        intent.putExtra("PDFPath", filePath);
+                        intent.putExtra("PDFPath", filePathList.get(position));
                         intent.putExtra("FileName", file_names.get(position) + ".pdf");
                         startActivity(intent);
                         break;
@@ -341,6 +365,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     /* Populating the list view */
     public void load_file_list() {
         file_names = getFileNames();
+
         /*ArrayAdapter adapter = new ArrayAdapter<String>(this,
                 R.layout.act_file_name, file_names);*/
 
@@ -473,7 +498,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     /*
-  Getting the PDF file names in the data directory and storing them in a list
+        Getting the PDF file names in the data directory and storing them in a list
    */
     private ArrayList<String> getFileNames() {
         String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/";
@@ -498,5 +523,141 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         }
         Collections.reverse(list);
         return list;
+    }
+
+    private void callGetReportsECGsListApi() {
+
+        ProgressDialog pd = new ProgressDialog(ReportActivity.this);
+        pd.setMessage("Getting...");
+        pd.setCancelable(false);
+        pd.show();
+
+        // url to post our data
+        String url = "https://drcadio.soluspottechnolabs.com/api/ecg-list";
+//        loadingPB.setVisibility(View.VISIBLE);
+
+        // creating a new variable for our request queue
+        RequestQueue queue = Volley.newRequestQueue(ReportActivity.this);
+
+        // on below line we are calling a string
+        // request method to post the data to our API
+        // in this we are calling a post method.
+        StringRequest request = new StringRequest(Request.Method.GET, url, new com.android.volley.Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                // inside on response method we are
+                // hiding our progress bar
+                // and setting data to edit text as empty
+                //loadingPB.setVisibility(View.GONE);
+
+                // on below line we are displaying a success toast message.
+
+                try {
+                    // on below line we are parsing the response
+                    // to json object to extract data from it.
+                    JSONObject respObj = new JSONObject(response);
+                    Log.v("Response :: ", respObj.toString());
+
+                    //String name = respObj.getString("name");
+                    //String job = respObj.getString("job");
+
+                    // on below line we are setting this string s to our text view.
+                    //responseTV.setText("Name : " + name + "\n" + "Job : " + job);
+
+                    if(respObj.getString("status").equalsIgnoreCase("success")) {
+                        Log.v("List Count :: ", ""+respObj.getJSONArray("success_data").length());
+                        pd.dismiss();
+                        JSONArray jArray = new JSONArray(respObj.getJSONArray("success_data").toString());
+                        for(int i=0; i<jArray.length(); i++) {
+                            String fileName = jArray.getJSONObject(i).getString("document_name").toString();
+                            file_names.add(fileName);
+                            filePathList.add(jArray.getJSONObject(i).getString("document_path"));
+                        }
+
+                        if(file_names.size() > 0) {
+                            header_text.setText("Reports ("+file_names.size()+")");
+                        }
+
+                        ListView listView = findViewById(R.id.file_names_list);
+                        //listView.setAdapter(adapter);
+
+                        ItemListViewAdapter itemAdapter = new ItemListViewAdapter(ReportActivity.this, R.layout.item_list_name, file_names);
+                        listView.setAdapter(itemAdapter);
+
+                        etSearch = findViewById(R.id.etSearch);
+                        // Add Text Change Listener to EditText
+                        etSearch.addTextChangedListener(new TextWatcher() {
+
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                // Call back the Adapter with current character to Filter
+                                itemAdapter.getFilter().filter(s.toString());
+                            }
+
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count,int after) {
+                            }
+
+                            @Override
+                            public void afterTextChanged(Editable s) {
+                            }
+                        });
+
+                        if(file_names.size() == 0) {
+                            tvNoReports.setVisibility(View.VISIBLE);
+                            llSearch.setVisibility(View.GONE);
+                            listView.setVisibility(View.GONE);
+                        } else {
+                            tvNoReports.setVisibility(View.GONE);
+                            llSearch.setVisibility(View.VISIBLE);
+                            listView.setVisibility(View.VISIBLE);
+                        }
+
+                    } else {
+                        pd.dismiss();
+                        Toast.makeText(ReportActivity.this, respObj.getString("error_data").toString(), Toast.LENGTH_SHORT).show();
+                    }
+                } catch (JSONException e) {
+                    pd.dismiss();
+                    throw new RuntimeException(e);
+                }
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // method to handle errors.
+                Toast.makeText(ReportActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                String token = PrefHelper.getString("Token", "");
+                Log.v("Token :: ", token.toString());
+                Map<String, String> params = new HashMap<String, String>();
+//                    params.put("Content-Type", "multipart/form-data; charset=UTF-8");
+                params.put("Authorization", "Bearer "+token);
+                Log.v("Authorization :: ", params.toString());
+                return params;
+            }
+            @Override
+            protected Map<String, String> getParams() {
+                // below line we are creating a map for
+                // storing our values in key and value pair.
+                Map<String, String> params = new HashMap<String, String>();
+
+//                params.put("email", edtUserName.getText().toString());
+//                params.put("password", edtPassword.getText().toString());
+
+                Log.v("Request :: ", params.toString());
+
+                // at last we are
+                // returning our params.
+                return params;
+            }
+        };
+        // below line is to make
+        // a json object request.
+        queue.add(request);
     }
 }

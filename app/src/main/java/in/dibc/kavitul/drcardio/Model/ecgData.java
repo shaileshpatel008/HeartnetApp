@@ -70,7 +70,7 @@ public class ecgData {
         patient_comments = "";
 
         initDataWithLength(false);
-        ecgData.date_time = new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new Date());
+        ecgData.date_time = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss.SS").format(new Date());
         ecgData.deviceName = appbt.btHelper.connectedDeviceName;
     }
     public static void initDataWithLength(boolean auto) {

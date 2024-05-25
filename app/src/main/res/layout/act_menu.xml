@@ -31,6 +31,33 @@
                 android:scaleType="fitXY"
                 android:src="@drawable/mainlogo" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:text="Welcome"
+                    android:textStyle="normal"
+                    android:layout_marginLeft="@dimen/dimen_20dp"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_20sdp" />
+
+                <TextView
+                    android:id="@+id/tvStaffName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:text="Shailesh Patel"
+                    android:textStyle="bold"
+                    android:layout_marginLeft="@dimen/dimen_20dp"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_15sdp" />
+            </LinearLayout>
+
             <ImageView
                 android:id="@+id/whitelogo"
                 android:layout_width="@dimen/_90sdp"

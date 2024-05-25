@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Dr. Cardio</string>
-    <string name="app_title">Dr. Cardio</string>
+    <string name="app_name">Dr. Cardio Cloud</string>
+    <string name="app_title">Dr. Cardio Cloud</string>
     <string name="app_subtitle">12 channel mobile ECG</string>
 
 

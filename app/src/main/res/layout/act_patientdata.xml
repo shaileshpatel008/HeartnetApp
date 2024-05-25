@@ -148,6 +148,7 @@
                     android:background="@color/colorPrimaryLight"
                     android:padding="@dimen/_10sdp"
                     android:textColor="@color/black"
+                    android:inputType="textCapSentences"
                     android:maxLength="20" />
 
                 <EditText
@@ -329,7 +330,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/comments"
                     android:maxLength="60"
-                    android:inputType="textMultiLine"
+                    android:inputType="textMultiLine|textCapSentences"
                     android:lines="3"
                     android:layout_marginTop="@dimen/_10sdp"
                     android:background="@color/colorPrimaryLight"

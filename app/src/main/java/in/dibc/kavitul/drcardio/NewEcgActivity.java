@@ -75,6 +75,9 @@ import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.ecgFilter;
 import in.dibc.kavitul.drcardio.SupportClass.mFile;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.utils.GPSTracker;
+import in.dibc.kavitul.drcardio.utils.PathUtil;
+import in.dibc.kavitul.drcardio.utils.PrefHelper;
 import in.dibc.kavitul.drcardio.widgets.VolleyMultipartRequest;
 
 public class NewEcgActivity extends AppCompatActivity implements View.OnClickListener {
@@ -107,7 +110,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
     private LinearLayout ll_loading;
     // TODO: 2/2/21 try to use threadpool or thread factory for multithreading
 
-    String upload_URL = "https://rainbowline.soluspottechnolabs.com/api/uploadCardioPdf";
+    String upload_URL = "https://drcadio.soluspottechnolabs.com/api/upload-pdf"; //https://rainbowline.soluspottechnolabs.com/api/uploadCardioPdf";
     RequestQueue rQueue;
 
     @Override
@@ -123,6 +126,25 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         ecgFilter.setFilter(settings.filter);
         if (settings.test_mode.equals("true")) {
             showTestModePopup();
+        }
+
+        // check if GPS enabled
+        GPSTracker gpsTracker = new GPSTracker(this);
+        if (gpsTracker.getIsGPSTrackingEnabled())
+        {
+            PathUtil.userLatitude = gpsTracker.getLatitude();
+            PathUtil.userLongitude = gpsTracker.getLongitude();
+            PathUtil.userAddress = gpsTracker.getAddressLine(NewEcgActivity.this);
+            Log.v("Latitude :::: ", ""+PathUtil.userLatitude);
+            Log.v("Longitude :::: ", ""+PathUtil.userLongitude);
+            Log.v("User Address :::: ", ""+PathUtil.userAddress);
+        }
+        else
+        {
+            // can't get location
+            // GPS or Network is not enabled
+            // Ask user to enable GPS/network in settings
+            gpsTracker.showSettingsAlert();
         }
     }
 
@@ -458,7 +480,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
             ecgData.chart[ch].getDescription().setTextSize(appbt.res.getDimension(R.dimen._14sdp));
             ecgData.chart[ch].getDescription().setPosition(15f, 75f);
             ecgData.chart[ch].getDescription().setTextAlign(Paint.Align.LEFT);
-            //ecgData.chart[i].setLogEnabled(true);
+            ecgData.chart[ch].setLogEnabled(true); // SP 888888888
             modifyLineChartsUI(ecgData.chart[ch]);
         }
     }
@@ -598,7 +620,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         ll_loading.setVisibility(View.VISIBLE);
 
         //Resets any previous data in chart
-        ecgData.date_time = new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new Date());
+        ecgData.date_time = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss.SS").format(new Date());
         resetChartData();
         clearCharts();
         initLineCharts();
@@ -764,25 +786,25 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                         params2.putString(FirebaseAnalytics.Param.VALUE, "Report Generated from : "+ecgData.patinet_deviceid+" Device");
                         mFirebaseAnalytics.logEvent("ECG_Report_Generated", params2);
 
-                        String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
-                        String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
-                        File file = new File(filepath);//here schedule1.pdf is the pdf file name which is keep in assets folder.
-
-                        //String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
-                        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
-                        intent.putExtra("PDFPath", filepath);
-                        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
-                        startActivity(intent);
-                        finish();
-
-                        ////88888888
-//                        // File UPLOAD
 //                        String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
 //                        String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
-//                        File file = new File(filepath);
-//                        Log.v("Upload PDF File Name : ", appendFileName + "_" + ecgData.date_time + ".pdf");
-//                        Log.v("Upload Path :: ", filepath);
-//                        uploadPDF(appendFileName + "_" + ecgData.date_time + ".pdf", Uri.fromFile(file));
+//                        File file = new File(filepath);//here schedule1.pdf is the pdf file name which is keep in assets folder.
+//
+//                        //String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+//                        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+//                        intent.putExtra("PDFPath", filepath);
+//                        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
+//                        startActivity(intent);
+//                        finish();
+
+                        // File UPLOAD
+                        String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
+                        String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+                        File file = new File(filepath);
+                        Log.v("Upload PDF File Name : ", appendFileName + "_" + ecgData.date_time + ".pdf");
+                        Log.v("Upload Path :: ", filepath);
+
+                        uploadPDF(appendFileName + "_" + ecgData.date_time + ".pdf", Uri.fromFile(file));
                     } else {
                         new AlertDialog.Builder(NewEcgActivity.this)
                                 .setTitle("Unable to generate report")
@@ -1046,6 +1068,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
 
         ProgressDialog pd = new ProgressDialog(NewEcgActivity.this);
         pd.setMessage("Please wait.. Syncing with cloud..");
+        pd.setCancelable(false);
         pd.show();
 
         InputStream iStream = null;
@@ -1064,17 +1087,47 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                             try {
                                 JSONObject result = new JSONObject(resultResponse);
                                 String status = result.getString("status");
-                                String message = result.getString("message");
+//                                String message = result.getString("message");
+                                Log.v("Response :: ", result.toString());
 
                                 pd.dismiss();
 
                                 if (status.equals("success")) {
-                                    // tell everybody you have succed upload image and post strings
-                                    Log.i("Messsage", message);
+
+//                                    String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
+//                                    String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+//
+//                                    Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+//                                    intent.putExtra("PDFPath", filepath);
+//                                    intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
+//                                    startActivity(intent);
+//                                    finish();
+
+                                    Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+                                    intent.putExtra("PDFPath", result.getJSONObject("success_data").getString("document_path")/*.replaceAll("", "%20")*/);
+                                    intent.putExtra("FileName", result.getJSONObject("success_data").getString("pdf"));
+                                    startActivity(intent);
+                                    finish();
                                 } else {
-                                    Log.i("Unexpected", message);
+                                    pd.dismiss();
+                                    //Toast.makeText(NewEcgActivity.this, result.getString("error_data").toString(), Toast.LENGTH_SHORT).show();
+                                    new AlertDialog.Builder(NewEcgActivity.this)
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .setTitle("Upload error")
+                                            .setMessage(result.getString("error_data").toString())
+                                            .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+                                            {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                }
+
+                                            })
+                                            //.setNegativeButton("No", null)
+                                            .show();
                                 }
                             } catch (JSONException e) {
+                                pd.dismiss();
                                 e.printStackTrace();
                             }
                         }
@@ -1082,10 +1135,35 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
                             pd.dismiss();
+                            new AlertDialog.Builder(NewEcgActivity.this)
+                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                    .setTitle("Upload error")
+                                    .setMessage(error.getMessage())
+                                    .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+
+                                    })
+                                    //.setNegativeButton("No", null)
+                                    .show();
                         }
                     }) {
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    String token = PrefHelper.getString("Token", "");
+                    Log.v("Token :: ", token.toString());
+                    Map<String, String> params = new HashMap<String, String>();
+//                    params.put("Content-Type", "multipart/form-data; charset=UTF-8");
+                    params.put("Authorization", "Bearer "+token);
+                    Log.v("Authorization :: ", params.toString());
+                    return params;
+                }
 
                 /*
                  * If you want to add more parameters with the image
@@ -1095,8 +1173,44 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                  * */
                 @Override
                 protected Map<String, String> getParams() throws AuthFailureError {
+//                    System.getProperty("os.version"); // OS version
+//                    android.os.Build.VERSION.SDK      // API Level
+//                    android.os.Build.DEVICE           // Device
+//                    android.os.Build.MODEL            // Model
+//                    android.os.Build.PRODUCT          // Product
+
+                    JSONObject jDeviceInfo = new JSONObject();
+                    try {
+//                        jDeviceInfo.put("OS", System.getProperty("os.version"));
+                        jDeviceInfo.put("API Level", android.os.Build.VERSION.SDK_INT);
+                        jDeviceInfo.put("Device", android.os.Build.DEVICE);
+                        jDeviceInfo.put("Model", android.os.Build.MODEL );
+                        jDeviceInfo.put("FullDeviceInfo", Build.BRAND+" "+android.os.Build.MODEL);
+                        Log.v("Device Informations :: ", jDeviceInfo.toString());
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    JSONObject jPatientInfo = new JSONObject();
+                    try {
+//                        jDeviceInfo.put("OS", System.getProperty("os.version"));
+                        jPatientInfo.put("PatientID", ecgData.patient_id);
+                        jPatientInfo.put("PatientName", ecgData.patient_name);
+                        jPatientInfo.put("PatientAge", ecgData.patient_age);
+                        jPatientInfo.put("PatientComments", ecgData.patient_comments);
+                        Log.v("Patient Informations :: ", jPatientInfo.toString());
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
                     Map<String, String> params = new HashMap<>();
-                    // params.put("tags", "ccccc");  add string parameters
+                    params.put("device_id", ecgData.patinet_deviceid);
+                    params.put("latitude", ""+PathUtil.userLatitude);
+                    params.put("longitude", ""+PathUtil.userLongitude);
+                    params.put("device_info", jDeviceInfo.toString());
+                    params.put("patient_info", jDeviceInfo.toString());
+                    params.put("address", ""+PathUtil.userAddress);
+
+                    Log.v("Request :: ", params.toString());
                     return params;
                 }
 
@@ -1107,7 +1221,9 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                 protected Map<String, DataPart> getByteData() {
                     Map<String, DataPart> params = new HashMap<>();
 
-                    params.put("upload_file", new DataPart(pdfname ,inputData));
+                    params.put("document_path", new DataPart(pdfname ,inputData));
+                    Log.v("Document Path :: ", pdfname);
+
                     return params;
                 }
             };

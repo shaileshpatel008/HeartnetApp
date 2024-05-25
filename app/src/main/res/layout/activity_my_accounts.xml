@@ -346,6 +346,37 @@
                         android:textSize="@dimen/_15sdp" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/llSignout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingLeft="@dimen/_20sdp"
+                    android:paddingRight="@dimen/_20sdp"
+                    android:paddingBottom="@dimen/_12sdp"
+                    android:paddingTop="@dimen/_12sdp"
+                    android:layout_marginLeft="@dimen/_20sdp"
+                    android:layout_marginRight="@dimen/_20sdp"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:background="@drawable/btn_roundedrect_primary_light">
+
+                    <ImageView
+                        android:layout_width="@dimen/_16sdp"
+                        android:layout_height="@dimen/_16sdp"
+                        android:src="@drawable/ic_help_new"
+                        android:tint="@color/black" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="10dp"
+                        android:layout_marginLeft="@dimen/_20sdp"
+                        android:gravity="center_vertical"
+                        android:text="Sign out"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/_15sdp" />
+                </LinearLayout>
+
                 <TextView
                     android:id="@+id/tvVersion"
                     android:layout_width="match_parent"
