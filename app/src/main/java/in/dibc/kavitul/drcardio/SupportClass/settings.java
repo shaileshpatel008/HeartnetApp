@@ -111,8 +111,6 @@ public class settings {
         saveSettings();
     }
 
-
-
     public static void saveSettings(){
         SharedPreferences.Editor edit = appbt.pref.edit();
         edit.putString("settings_test_mode", test_mode);

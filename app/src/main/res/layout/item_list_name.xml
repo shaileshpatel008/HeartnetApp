@@ -36,6 +36,39 @@
                 android:textStyle="bold" >
             </TextView>
 
+            <LinearLayout
+                android:id="@+id/llReported"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:layout_gravity="right"
+                android:visibility="gone"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/ivBack"
+                    android:layout_width="@dimen/_16sdp"
+                    android:layout_height="@dimen/_16sdp"
+                    android:layout_gravity="center_vertical"
+                    android:backgroundTint="@color/green_active"
+                    android:foregroundTint="@color/green_active"
+                    android:src="@drawable/ic_checked"
+                    app:tint="@color/green_active" />
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/_2sdp"
+                    android:padding="10dip"
+                    android:text="Reported"
+                    android:textColor="@color/green_active"
+                    android:textSize="@dimen/_13sdp"
+                    android:textStyle="bold" >
+                </TextView>
+
+            </LinearLayout>
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </LinearLayout>

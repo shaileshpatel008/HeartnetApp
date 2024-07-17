@@ -101,6 +101,8 @@ public class SignInActivity extends AppCompatActivity {
 
         // url to post our data
         String url = "https://drcadio.soluspottechnolabs.com/api/login";
+//        String url = "http://192.168.1.2:8000/api/login";
+
 //        loadingPB.setVisibility(View.VISIBLE);
 
         // creating a new variable for our request queue

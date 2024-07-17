@@ -54,14 +54,18 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.gauravbhola.ripplepulsebackground.RipplePulseLayout;
 import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
 import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
+import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork;
 import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
@@ -83,7 +87,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,6 +104,7 @@ import in.dibc.kavitul.bluetoothmodule.AppBluetoothConnectionThread;
 import in.dibc.kavitul.bluetoothmodule.BluetoothPermissions;
 import in.dibc.kavitul.bluetoothmodule.ScanConnect;
 import in.dibc.kavitul.drcardio.Adapter.ItemListViewAdapter;
+import in.dibc.kavitul.drcardio.Model.ECGDataModel;
 import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.SupportClass.LocaleHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
@@ -104,6 +113,10 @@ import in.dibc.kavitul.drcardio.utils.GPSTracker;
 import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
 import in.dibc.kavitul.drcardio.widgets.RoundedImageView;
+import in.dibc.kavitul.drcardio.widgets.VolleyMultipartRequest;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 @SuppressLint("MissingPermission")
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -134,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
     private boolean waitingForVersionResponse = false;
 
+    private Disposable internetDisposable;
+
     BubbleNavigationLinearView bubbleNavigation;
 
     RipplePulseLayout rippleBackground;
@@ -145,6 +160,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQ_CODE_VERSION_UPDATE = 880;
     private AppUpdateManager appUpdateManager;
     private InstallStateUpdatedListener installStateUpdatedListener;
+
+    String upload_URL = "https://drcadio.soluspottechnolabs.com/api/upload-pdf"; //https://rainbowline.soluspottechnolabs.com/api/uploadCardioPdf";
+    RequestQueue rQueue;
 
 
     @Override
@@ -227,6 +245,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
         checkForAppUpdate();
+
+        internetDisposable = ReactiveNetwork.observeInternetConnectivity()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(isConnected -> {
+                    Log.v("CONNECTIVITY STATUS :: ", ""+isConnected.toString());
+                    PathUtil.INTERNET_STATUS = isConnected;
+
+                    if(isConnected) {
+                        ArrayList<ECGDataModel> ecgDataList = PrefHelper.getECGDataListResponse("ECGDataList");
+                        try {
+                            Log.v("ECG DATA COUNT :::: ", ""+ecgDataList.size());
+                            if(ecgDataList.size() > 0) {
+                                sendOfflineECGDataToServer();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                });
+    }
+
+    public void sendOfflineECGDataToServer() {
+        try {
+            ArrayList<ECGDataModel> ecgDataList = PrefHelper.getECGDataListResponse("ECGDataList");
+            Log.v("ECG DATA COUNT :::: ", ""+ecgDataList.size());
+            if(ecgDataList.size() > 0) {
+                //for(int i=0; i<ecgDataList.size(); i++) {
+                uploadPDF(ecgDataList.get(0));
+                //}
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -575,7 +628,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(!appbt.btHelper.connectedDevice.getName().equalsIgnoreCase("null")) {
                 if(appbt.btHelper.connectedDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
 
-                    String lastSavedDeviceName = PrefHelper.getString("SavedDeviceName", "");
+                    /*String lastSavedDeviceName = PrefHelper.getString("SavedDeviceName", "");
                     if(lastSavedDeviceName.equalsIgnoreCase(ecgData.patinet_deviceid)) {
                         PrefHelper.setString("SavedDeviceName", ecgData.patinet_deviceid);
                         new Handler().postDelayed(new Runnable() {
@@ -611,6 +664,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }, 2000);
                     } else {
                         callCheckDeviceApi();
+                    }*/
+
+                    txt_connected_device_name.setClickable(false);
+                    txt_connected_device_name.setEnabled(false);
+                    txt_connected_device_name.setText(appbt.res.getString(R.string.connected) + appbt.btHelper.connectedDevice.getName());
+                    txt_connected_device_name.setTextColor(getResources().getColor(R.color.green_active));
+                    txt_acquire_new_ecg.setVisibility(View.VISIBLE);
+                    llAcquireNewECG.setBackground(getResources().getDrawable(R.drawable.rounded_rect_new_ecg));
+                    //rippleBackground.stopRippleAnimation();
+                    ripplePulseRelativeLayout.stopPulse();
+                    menu_new_ecg.setBackground(getResources().getDrawable(R.drawable.circle_rect_primary));
+                    settings.saved_address = appbt.btHelper.connectedDevice.getAddress();
+                    settings.saved_device_name = appbt.btHelper.connectedDevice.getName();
+                    settings.saveSettings();
+                    device_is_connected = 2;
+                    appbt.conn = appbt.btHelper.connectionThread.getConnectedThread();
+                    if (appbt.conn == null) {
+                        disconnectFromDevice();
+                    } else {
+                        appbt.conn.btHelper = appbt.btHelper;
+                        checkHwVersion();
+                    }
+
+                    if (settings.test_mode.equals("true")) {
+                        txt_acquire_new_ecg.setText("ACQUIRE TEST ECG");
+                    } else {
+                        txt_acquire_new_ecg.setText("ACQUIRE NEW ECG");
                     }
 
 
@@ -1595,5 +1675,139 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // below line is to make
         // a json object request.
         queue.add(request);
+    }
+
+    private void uploadPDF(ECGDataModel ecgDataModel){
+
+//        ProgressDialog pd = new ProgressDialog(MainActivity.this);
+//        pd.setMessage("Please wait.. Syncing with cloud..");
+//        pd.setCancelable(false);
+//        pd.show();
+
+        InputStream iStream = null;
+        try {
+
+            iStream = getContentResolver().openInputStream(Uri.fromFile(new File(ecgDataModel.getPdf_file_path())));
+            final byte[] inputData = getBytes(iStream);
+
+            VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, upload_URL,
+                    new Response.Listener<NetworkResponse>() {
+                        @Override
+                        public void onResponse(NetworkResponse response) {
+                            Log.d("ressssssoo",new String(response.data));
+                            String resultResponse = new String(response.data);
+                            rQueue.getCache().clear();
+                            try {
+                                JSONObject result = new JSONObject(resultResponse);
+                                String status = result.getString("status");
+//                                String message = result.getString("message");
+                                Log.v("Response :: ", result.toString());
+
+//                                pd.dismiss();
+
+                                if (status.equals("success")) {
+                                    ArrayList<ECGDataModel> ecgDataList = PrefHelper.getECGDataListResponse("ECGDataList");
+                                    ecgDataList.remove(0);
+                                    PrefHelper.setECGDataListResponse("ECGDataList", ecgDataList);
+                                    //Log.v("Total Offline Records :: ", ""+PrefHelper.getECGDataListResponse("ECGDataList").size());
+                                    sendOfflineECGDataToServer();
+                                } else {
+//                                    pd.dismiss();
+                                    //Toast.makeText(NewEcgActivity.this, result.getString("error_data").toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (JSONException e) {
+//                                pd.dismiss();
+                                e.printStackTrace();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            //Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+//                            pd.dismiss();
+                        }
+                    }) {
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    String token = PrefHelper.getString("Token", "");
+                    Log.v("Token :: ", token.toString());
+                    Map<String, String> params = new HashMap<String, String>();
+//                    params.put("Content-Type", "multipart/form-data; charset=UTF-8");
+                    params.put("Authorization", "Bearer "+token);
+                    Log.v("Authorization :: ", params.toString());
+                    return params;
+                }
+
+                /*
+                 * If you want to add more parameters with the image
+                 * you can do it here
+                 * here we have only one parameter with the image
+                 * which is tags
+                 * */
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<>();
+                    params.put("device_id", ecgDataModel.getDevice_id());
+                    params.put("latitude", ecgDataModel.getLatitude());
+                    params.put("longitude", ecgDataModel.getLongitude());
+                    params.put("device_info", ecgDataModel.getDevice_info());
+                    params.put("patient_info", ecgDataModel.getPatient_info());
+                    params.put("address", ecgDataModel.getAddress());
+                    params.put("hr", ecgDataModel.getHr());
+                    params.put("r", ecgDataModel.getR());
+                    params.put("rr", ecgDataModel.getRr());
+                    params.put("pr", ecgDataModel.getPr());
+                    params.put("qrs", ecgDataModel.getQrs());
+                    params.put("qt", ecgDataModel.getQt());
+                    params.put("qtc", ecgDataModel.getQtc());
+                    params.put("qt_by_qtc", ecgDataModel.getQt_by_qtc());
+
+                    Log.v("Request :: ", params.toString());
+                    return params;
+                }
+
+                /*
+                 *pass files using below method
+                 * */
+                @Override
+                protected Map<String, DataPart> getByteData() {
+                    Map<String, DataPart> params = new HashMap<>();
+
+                    params.put("document_path", new DataPart(ecgDataModel.getPdf_name() ,inputData));
+                    Log.v("Document Path :: ", ecgDataModel.getPdf_name());
+
+                    return params;
+                }
+            };
+
+
+            volleyMultipartRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    400000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            rQueue = Volley.newRequestQueue(MainActivity.this);
+            rQueue.add(volleyMultipartRequest);
+
+        } catch (FileNotFoundException e) {
+//            pd.dismiss();
+            e.printStackTrace();
+        } catch (IOException e) {
+//            pd.dismiss();
+            e.printStackTrace();
+        }
+    }
+
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
     }
 }

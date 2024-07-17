@@ -7,11 +7,15 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Map;
 
+import in.dibc.kavitul.drcardio.Model.ECGDataModel;
 import in.dibc.kavitul.drcardio.SupportClass.App;
 
 /**
@@ -195,4 +199,17 @@ public class PrefHelper {
 				.commit();
 	}
 
+	public static void setECGDataListResponse(String key, ArrayList<ECGDataModel> getECGDataModel) {
+		final Editor editor = App.myPref.edit();
+		Gson gson = new Gson();
+		String json = gson.toJson(getECGDataModel);
+		editor.putString(key, json);
+		apply(editor);
+	}
+	public static ArrayList<ECGDataModel> getECGDataListResponse(String key) {
+		Gson gson = new Gson();
+		String json = App.myPref.getString(key, "");
+		return gson.fromJson(json, new TypeToken<ArrayList<ECGDataModel>>() {
+		}.getType());
+	}
 }

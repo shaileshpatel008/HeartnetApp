@@ -157,7 +157,7 @@ public class DataHandlerThread extends HandlerThread {
     }
 
     private void addEntryPerChannel(int ch, float y, int x) {
-//        Log.d(TAG, "addEntryPerChannel: ch:"+ch+" x:"+x+" y:"+y);
+        //Log.d(TAG, "addEntryPerChannel: ch:"+ch+" x:"+x+" y:"+y);
         LineData data = ecgData.chart[ch].getData();
         if (data != null) {
             ILineDataSet set = data.getDataSetByIndex(0);

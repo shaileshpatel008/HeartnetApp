@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,13 +72,18 @@ public class ItemListViewAdapter extends ArrayAdapter<String> implements Filtera
             // These TextViews are created in the XML files we defined.
 
             TextView tt = v.findViewById(R.id.tvTitle);
-            LinearLayout llItem = v.findViewById(R.id.llItem);
+            LinearLayout llReported = v.findViewById(R.id.llItem);
+
 
             //llItem.setBackground(mContext.getResources().getDrawable(R.drawable.btn_roundedrect_primary_light));
 
             // check to see if each individual textview is null.
             // if not, assign some text!
             if (tt != null){
+//                String kept = i.substring( 0, i.indexOf("$$"));
+//                String remainder = i.substring(i.indexOf(",")+1, i.length());
+//                Log.v("First :: ", kept);
+//                Log.v("Second :: ", remainder);
                 tt.setText(""+i);
             }
         }

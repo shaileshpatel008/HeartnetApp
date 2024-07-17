@@ -58,6 +58,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 
 import in.dibc.kavitul.bluetoothmodule.BluetoothPermissions;
+import in.dibc.kavitul.drcardio.Model.ECGDataModel;
 import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.SupportClass.DataHandlerThread;
 import in.dibc.kavitul.drcardio.SupportClass.ECGAnalysis;
@@ -480,7 +482,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
             ecgData.chart[ch].getDescription().setTextSize(appbt.res.getDimension(R.dimen._14sdp));
             ecgData.chart[ch].getDescription().setPosition(15f, 75f);
             ecgData.chart[ch].getDescription().setTextAlign(Paint.Align.LEFT);
-            ecgData.chart[ch].setLogEnabled(true); // SP 888888888
+            ecgData.chart[ch].setLogEnabled(false); // SP 888888888
             modifyLineChartsUI(ecgData.chart[ch]);
         }
     }
@@ -612,6 +614,8 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         }
         if (appbt.conn == null || !appbt.conn.isAlive()) {
             Toast.makeText(getApplicationContext(), "Error communicating to the device. Please go back and connect again.", Toast.LENGTH_LONG).show();
+//            finish(); // SP 88888888
+//            appbt.btHelper.connectedThread.disconnect(); // SP 88888888
             return;
         }
         hideSeekBar();
@@ -779,7 +783,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
 
                     ll_loading.setVisibility(View.GONE);
                     if (isGenerated[0]) {
-                        //displayAlertToView();
+                        displayAlertToView();
 
                         FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(NewEcgActivity.this);
                         Bundle params2 = new Bundle();
@@ -804,7 +808,106 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                         Log.v("Upload PDF File Name : ", appendFileName + "_" + ecgData.date_time + ".pdf");
                         Log.v("Upload Path :: ", filepath);
 
-                        uploadPDF(appendFileName + "_" + ecgData.date_time + ".pdf", Uri.fromFile(file));
+                        if(PathUtil.INTERNET_STATUS) {
+                            uploadPDF(appendFileName + "_" + ecgData.date_time + ".pdf", Uri.fromFile(file), ecgAnalysis.analysisArray);
+                        } else {
+
+                            try {
+                                JSONObject jDeviceInfo = new JSONObject();
+                                try {
+//                        jDeviceInfo.put("OS", System.getProperty("os.version"));
+                                    jDeviceInfo.put("API Level", android.os.Build.VERSION.SDK_INT);
+                                    jDeviceInfo.put("Device", android.os.Build.DEVICE);
+                                    jDeviceInfo.put("Model", android.os.Build.MODEL );
+                                    jDeviceInfo.put("FullDeviceInfo", Build.BRAND+" "+android.os.Build.MODEL);
+                                    Log.v("Device Informations :: ", jDeviceInfo.toString());
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                                JSONObject jPatientInfo = new JSONObject();
+                                try {
+                                    jPatientInfo.put("Id", ecgData.patient_id);
+                                    jPatientInfo.put("Name", ecgData.patient_name);
+                                    jPatientInfo.put("Age", ecgData.patient_age);
+                                    jPatientInfo.put("Comments", ecgData.patient_comments);
+                                    jPatientInfo.put("Gender", ecgData.patient_sex);
+                                    jPatientInfo.put("DeviceID", ecgData.patinet_deviceid);
+                                    Log.v("Patient Informations :: ", jPatientInfo.toString());
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+//                                Map<String, String> params = new HashMap<>();
+//                                params.put("device_id", ecgData.patinet_deviceid);
+//                                params.put("latitude", ""+PathUtil.userLatitude);
+//                                params.put("longitude", ""+PathUtil.userLongitude);
+//                                params.put("device_info", jDeviceInfo.toString());
+//                                params.put("patient_info", jDeviceInfo.toString());
+//                                params.put("address", ""+PathUtil.userAddress);
+
+                                float[][] analysis = ecgAnalysis.analysisArray;
+                                DecimalFormat df = new DecimalFormat();
+                                df.setMaximumFractionDigits(2);
+
+                                int rr = 0;
+                                if((int) analysis[1][0] > 0){
+                                    rr = Math.round((60000 / analysis[1][0]));
+                                }
+
+                                ArrayList<ECGDataModel> listECGDataModel = new ArrayList<>();
+                                if(PrefHelper.getECGDataListResponse("ECGDataList") != null) {
+                                    listECGDataModel = PrefHelper.getECGDataListResponse("ECGDataList");
+                                    ECGDataModel ecgDataModel = new ECGDataModel();
+                                    ecgDataModel.setAddress(""+PathUtil.userAddress);
+                                    ecgDataModel.setDevice_id(ecgData.patinet_deviceid);
+                                    ecgDataModel.setDevice_info(jDeviceInfo.toString());
+                                    ecgDataModel.setLatitude(""+PathUtil.userLatitude);
+                                    ecgDataModel.setLongitude(""+PathUtil.userLongitude);
+                                    ecgDataModel.setPatient_info(jDeviceInfo.toString());
+                                    ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
+                                    ecgDataModel.setPdf_file_path(filepath);
+                                    ecgDataModel.setHr((int) analysis[1][0] +"");
+                                    ecgDataModel.setR(df.format(analysis[1][1]) +"");
+                                    ecgDataModel.setRr(rr +"");
+                                    ecgDataModel.setPr(Math.round(analysis[1][7]*1000) +"");
+                                    ecgDataModel.setQrs(Math.round(analysis[1][6]*1000) +"");
+                                    ecgDataModel.setQt(Math.round(analysis[1][6]*1000) +"");
+                                    ecgDataModel.setQtc(Math.round((analysis[1][8]/analysis[1][11])*1000) +"");
+                                    ecgDataModel.setQt_by_qtc(df.format(analysis[1][11])+"");
+                                    listECGDataModel.add(ecgDataModel);
+                                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
+                                } else {
+                                    ECGDataModel ecgDataModel = new ECGDataModel();
+                                    ecgDataModel.setAddress(""+PathUtil.userAddress);
+                                    ecgDataModel.setDevice_id(ecgData.patinet_deviceid);
+                                    ecgDataModel.setDevice_info(jDeviceInfo.toString());
+                                    ecgDataModel.setLatitude(""+PathUtil.userLatitude);
+                                    ecgDataModel.setLongitude(""+PathUtil.userLongitude);
+                                    ecgDataModel.setPatient_info(jDeviceInfo.toString());
+                                    ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
+                                    ecgDataModel.setPdf_file_path(filepath);
+                                    ecgDataModel.setHr((int) analysis[1][0] +"");
+                                    ecgDataModel.setR(df.format(analysis[1][1]) +"");
+                                    ecgDataModel.setRr(rr +"");
+                                    ecgDataModel.setPr(Math.round(analysis[1][7]*1000) +"");
+                                    ecgDataModel.setQrs(Math.round(analysis[1][6]*1000) +"");
+                                    ecgDataModel.setQt(Math.round(analysis[1][6]*1000) +"");
+                                    ecgDataModel.setQtc(Math.round((analysis[1][8]/analysis[1][11])*1000) +"");
+                                    ecgDataModel.setQt_by_qtc(df.format(analysis[1][11])+"");
+                                    listECGDataModel.add(ecgDataModel);
+                                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
+                                }
+
+
+                                openGeneratedPDF();
+
+//                                Intent intent = new Intent(NewEcgActivity.this, MainActivity.class);
+//                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                startActivity(intent);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     } else {
                         new AlertDialog.Builder(NewEcgActivity.this)
                                 .setTitle("Unable to generate report")
@@ -860,23 +963,23 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         //#Bhavesh Change
         /*String fileName = appendFileName + "_" + ecgData.date_time + ".pdf";
         File pdfFile = new File(mFile.getDirFile(this,mFile.DIR_REPORT), fileName);*/
-//        String mimeType = "application/pdf";
-//        try {
-//            Intent intent = new Intent(Intent.ACTION_VIEW);
-//            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-//            Uri uri = FileProvider.getUriForFile(getBaseContext(), getApplicationContext().getPackageName() + ".provider", file);
-//            intent.setDataAndType(uri, mimeType);
-//            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//            startActivity(Intent.createChooser(intent, "Open PDF report using.."));
-//        } catch (ActivityNotFoundException e) {
-//            Toast.makeText(getApplicationContext(), "Unable to open report. make sure your phone has a PDF viewer installed. Report file: "+ file, Toast.LENGTH_LONG).show();
-//        }
+        String mimeType = "application/pdf";
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            Uri uri = FileProvider.getUriForFile(getBaseContext(), getApplicationContext().getPackageName() + ".provider", file);
+            intent.setDataAndType(uri, mimeType);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(intent, "Open PDF report using.."));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(getApplicationContext(), "Unable to open report. make sure your phone has a PDF viewer installed. Report file: "+ file, Toast.LENGTH_LONG).show();
+        }
 
         //String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
-        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
-        intent.putExtra("PDFPath", filepath);
-        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
-        startActivity(intent);
+//        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+//        intent.putExtra("PDFPath", filepath);
+//        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
+//        startActivity(intent);
     }
 
     public void openPatientForm(){
@@ -955,6 +1058,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                 case 9: // comm error - write failed.
                     Toast.makeText(getApplicationContext(), "Error communicating to device", Toast.LENGTH_LONG).show();
                     finish();
+//                    appbt.btHelper.connectedThread.disconnect(); // SP 88888888
                     break;
                 case 10:
                     int s = bundle.getInt("sec");
@@ -1064,7 +1168,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         dataHandlerThread.quit();
     }
 
-    private void uploadPDF(final String pdfname, Uri pdffile){
+    private void uploadPDF(final String pdfname, Uri pdffile, float[][] analysisArray){
 
         ProgressDialog pd = new ProgressDialog(NewEcgActivity.this);
         pd.setMessage("Please wait.. Syncing with cloud..");
@@ -1194,21 +1298,40 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                     JSONObject jPatientInfo = new JSONObject();
                     try {
 //                        jDeviceInfo.put("OS", System.getProperty("os.version"));
-                        jPatientInfo.put("PatientID", ecgData.patient_id);
-                        jPatientInfo.put("PatientName", ecgData.patient_name);
-                        jPatientInfo.put("PatientAge", ecgData.patient_age);
-                        jPatientInfo.put("PatientComments", ecgData.patient_comments);
-                        Log.v("Patient Informations :: ", jPatientInfo.toString());
+                        jPatientInfo.put("Id", ecgData.patient_id);
+                        jPatientInfo.put("Name", ecgData.patient_name);
+                        jPatientInfo.put("Age", ecgData.patient_age);
+                        jPatientInfo.put("Comments", ecgData.patient_comments);
+                        jPatientInfo.put("Gender", ecgData.patient_sex);
+                        jPatientInfo.put("DeviceID", ecgData.patinet_deviceid);
+//                        Log.v("Patient Informations :: ", jPatientInfo.toString());
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
+                    float[][] analysis = analysisArray;
+                    DecimalFormat df = new DecimalFormat();
+                    df.setMaximumFractionDigits(2);
+
+                    int rr = 0;
+                    if((int) analysis[1][0] > 0){
+                        rr = Math.round((60000 / analysis[1][0]));
+                    }
+
                     Map<String, String> params = new HashMap<>();
                     params.put("device_id", ecgData.patinet_deviceid);
                     params.put("latitude", ""+PathUtil.userLatitude);
                     params.put("longitude", ""+PathUtil.userLongitude);
                     params.put("device_info", jDeviceInfo.toString());
-                    params.put("patient_info", jDeviceInfo.toString());
+                    params.put("patient_info", jPatientInfo.toString());
                     params.put("address", ""+PathUtil.userAddress);
+                    params.put("hr", (int) analysis[1][0]+"");
+                    params.put("r", df.format(analysis[1][1])+"");
+                    params.put("rr", rr +"");
+                    params.put("pr", Math.round(analysis[1][7]*1000)+"");
+                    params.put("qrs", Math.round(analysis[1][6]*1000)+"");
+                    params.put("qt", Math.round(analysis[1][8]*1000)+"");
+                    params.put("qtc", Math.round((analysis[1][8]/analysis[1][11])*1000)+"");
+                    params.put("qt_by_qtc", df.format(analysis[1][11])+"");
 
                     Log.v("Request :: ", params.toString());
                     return params;

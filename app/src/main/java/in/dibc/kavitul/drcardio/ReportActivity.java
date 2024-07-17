@@ -63,6 +63,7 @@ import in.dibc.kavitul.drcardio.Adapter.ItemListViewAdapter;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mFile;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
 
 public class ReportActivity extends AppCompatActivity implements View.OnClickListener {
@@ -70,6 +71,8 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     ListView file_names_list;
     ArrayList<String> file_names = new ArrayList<>();
     ArrayList<String> filePathList = new ArrayList<>();
+
+    ArrayList<String> listStatus = new ArrayList<>();
 
     TextView tvNoReports;
 
@@ -187,9 +190,15 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 //            }
 //        }
 
-        callGetReportsECGsListApi();
+
 
         //load_file_list();
+
+        if(PathUtil.INTERNET_STATUS) {
+            callGetReportsECGsListApi();
+        } else {
+            load_file_list();
+        }
 
         File extStorageDir = new File(Environment.getExternalStorageDirectory().toString());
         String[] fileList = extStorageDir.list();
@@ -252,7 +261,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         builder.setTitle("Choose an option");
 
         // add a list
-        String[] animals = {"View", "Share", "Delete"};
+        String[] animals = {"View", "Share"/*, "Delete"*/};
         builder.setItems(animals, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -534,6 +543,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
         // url to post our data
         String url = "https://drcadio.soluspottechnolabs.com/api/ecg-list";
+//        String url = "http://192.168.1.2/api/ecg-list";
 //        loadingPB.setVisibility(View.VISIBLE);
 
         // creating a new variable for our request queue
@@ -570,7 +580,8 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
                         JSONArray jArray = new JSONArray(respObj.getJSONArray("success_data").toString());
                         for(int i=0; i<jArray.length(); i++) {
                             String fileName = jArray.getJSONObject(i).getString("document_name").toString();
-                            file_names.add(fileName);
+                            file_names.add(fileName); //jArray.getJSONObject(i).getString("status")+"$$"+
+//                            listStatus.add(jArray.getJSONObject(i).getString("status"));
                             filePathList.add(jArray.getJSONObject(i).getString("document_path"));
                         }
 
