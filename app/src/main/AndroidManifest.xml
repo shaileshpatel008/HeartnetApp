@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="in.dibc.kavitul.drcardio">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -21,6 +20,7 @@
         tools:ignore="ScopedStorage" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
 
     <application
         android:name=".SupportClass.App"
@@ -33,16 +33,9 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        tools:replace="android:theme"
         tools:ignore="LockedOrientationActivity"
         tools:targetApi="q">
-        <activity
-            android:name=".PDFViewActivity_"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".PDFViewActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
         <activity
             android:name=".PDFViewerActivity"
             android:exported="false"
@@ -100,12 +93,10 @@
             android:screenOrientation="portrait" />
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ReportActivity"
             android:label="Report Activity"
-            android:noHistory="true"
             android:screenOrientation="portrait" />
 
         <provider

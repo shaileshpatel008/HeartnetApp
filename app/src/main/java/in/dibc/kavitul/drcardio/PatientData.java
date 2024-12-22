@@ -40,7 +40,9 @@ import com.bumptech.glide.Glide;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.DexterError;
 import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.williamww.silkysignature.views.SignaturePad;
 
@@ -61,9 +63,19 @@ import java.util.List;
 
 import in.dibc.kavitul.drcardio.Model.ecgData;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
-import in.dibc.kavitul.drcardio.image_picker.ImagePicker;
+//import in.dibc.kavitul.drcardio.image_picker.ImagePicker;
 import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
+import kotlin.Function;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+
+import com.github.dhaval2404.imagepicker.ImagePicker;
+import com.github.dhaval2404.imagepicker.constant.ImageProvider;
+import com.github.dhaval2404.imagepicker.listener.DismissListener;
+//import com.github.dhaval2404.imagepicker.sample.util.FileUtil;
+//import com.github.dhaval2404.imagepicker.sample.util.IntentUtil;
+import com.github.dhaval2404.imagepicker.util.IntentUtils;
 
 public class PatientData extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "PatientData";
@@ -172,47 +184,74 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
                 break;
             case R.id.img_profile:
             case R.id.img_plus:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    Dexter.withActivity(this)
-                            .withPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
-                            .withListener(new MultiplePermissionsListener() {
-                                @Override
-                                public void onPermissionsChecked(MultiplePermissionsReport report) {
-                                    if (report.areAllPermissionsGranted()) {
-                                        showImagePickerOptions();
-                                    }
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                    Log.v("6666", "6666");
+//                    Dexter.withActivity(this)
+//                            .withPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
+//                            .withListener(new MultiplePermissionsListener() {
+//                                @Override
+//                                public void onPermissionsChecked(MultiplePermissionsReport report) {
+//                                    if (report.areAllPermissionsGranted()) {
+//                                        showImagePickerOptions();
+//                                    }
+//
+//                                    if (report.isAnyPermissionPermanentlyDenied()) {
+//                                        showSettingsDialog();
+//                                    }
+//                                }
+//
+//                                @Override
+//                                public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+//                                    token.continuePermissionRequest();
+//                                }
+//                            }).check();
+//                } else {
+//                    Log.v("8888", "8888");
+//                    Dexter.withActivity(this)
+//                            .withPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                            .withListener(new MultiplePermissionsListener() {
+//                                @Override
+//                                public void onPermissionsChecked(MultiplePermissionsReport report) {
+//                                    if (report.areAllPermissionsGranted()) {
+//                                        showImagePickerOptions();
+//                                    }
+//
+//                                    if (report.isAnyPermissionPermanentlyDenied()) {
+//                                        showSettingsDialog();
+//                                    }
+//                                }
+//
+//                                @Override
+//                                public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+//                                    token.continuePermissionRequest();
+//                                }
+//                            })
+//                            .withErrorListener(new PermissionRequestErrorListener() {
+//                                @Override public void onError(DexterError error) {
+//                                    Log.v("Dexter", "PERMISSION There was an error: " + error.toString());
+//                                }
+//                            })
+//                            .check();
+//                }
 
-                                    if (report.isAnyPermissionPermanentlyDenied()) {
-                                        showSettingsDialog();
-                                    }
-                                }
-
-                                @Override
-                                public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
-                                    token.continuePermissionRequest();
-                                }
-                            }).check();
-                } else {
-                    Dexter.withActivity(this)
-                            .withPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            .withListener(new MultiplePermissionsListener() {
-                                @Override
-                                public void onPermissionsChecked(MultiplePermissionsReport report) {
-                                    if (report.areAllPermissionsGranted()) {
-                                        showImagePickerOptions();
-                                    }
-
-                                    if (report.isAnyPermissionPermanentlyDenied()) {
-                                        showSettingsDialog();
-                                    }
-                                }
-
-                                @Override
-                                public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
-                                    token.continuePermissionRequest();
-                                }
-                            }).check();
-                }
+                ImagePicker.with(this)
+                        // Crop Square image
+                        .cropSquare()
+                        .setImageProviderInterceptor(new Function1<ImageProvider, Unit>() {
+                            @Override
+                            public Unit invoke(ImageProvider imageProvider) {
+                                Log.d("ImagePicker", "Selected ImageProvider: " + imageProvider.toString());
+                                return null;
+                            }
+                        }).setDismissListener(new DismissListener() {
+                            @Override
+                            public void onDismiss() {
+                                Log.d("ImagePicker", "Dialog Dismiss");
+                            }
+                        })
+                        // Image resolution will be less than 512 x 512
+                        .maxResultSize(200, 200)
+                        .start(REQUEST_IMAGE);
 
                 break;
         }
@@ -250,7 +289,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
         imageView = (ImageView) findViewById(R.id.image_view);
         textView = (TextView) findViewById(R.id.image_stream_indicator);
         // width and height will be at least 600px long (optional).
-        ImagePicker.setMinQuality(600, 600);
+//        ImagePicker.setMinQuality(600, 600);
 
         imgProfile = findViewById(R.id.img_profile);
         imgPlus = findViewById(R.id.img_plus);
@@ -311,12 +350,12 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
         mCompressButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bitmap signatureBitmap = mSilkySignaturePad.getCompressedSignatureBitmap(50);
-                if (addJpgSignatureToGallery(signatureBitmap)) {
-                    Toast.makeText(PatientData.this, "50% compressed signature saved into the Gallery", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(PatientData.this, "Unable to store the signature", Toast.LENGTH_SHORT).show();
-                }
+//                Bitmap signatureBitmap = mSilkySignaturePad.getCompressedSignatureBitmap(50);
+//                if (addJpgSignatureToGallery(signatureBitmap)) {
+//                    Toast.makeText(PatientData.this, "50% compressed signature saved into the Gallery", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    Toast.makeText(PatientData.this, "Unable to store the signature", Toast.LENGTH_SHORT).show();
+//                }
             }
         });
     }
@@ -359,7 +398,7 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     }
 
     public void onPickImage(View view) {
-        ImagePicker.pickImage(this, "Select your image:");
+//        ImagePicker.pickImage(this, "Select your image:");
     }
 
     private void showDate(int year, int month, int day) {
@@ -492,7 +531,8 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
-                Uri uri = data.getParcelableExtra("path");
+//                Uri uri = data.getParcelableExtra("path");
+                Uri uri = data.getData();
                 try {
                     // You can update this bitmap to your server
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);

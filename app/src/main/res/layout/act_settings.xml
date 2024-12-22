@@ -315,13 +315,16 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical">
 
-                            <org.honorato.multistatetogglebutton.MultiStateToggleButton
+                            <com.davidmiguel.multistateswitch.MultiStateSwitch
                                 android:id="@+id/mstb_multi_id"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="0dip"
-                                android:layout_marginRight="@dimen/dimen_40dp"
-                                app:values="@array/runMode" />
+                                android:layout_width="@dimen/_200sdp"
+                                android:layout_height="55dp"
+                                android:layout_marginTop="8dp"
+                                app:multistateswitch_background_color="@color/colorWhite"
+                                app:multistateswitch_disabled_background_color="@color/colorGray"
+                                app:multistateswitch_selected_background_color="@color/colorPrimary"
+                                app:multistateswitch_selected_text_color="@color/colorWhite"
+                                app:multistateswitch_disabled_text_color="@color/colorBlack" />
 
                             <TextView
                                 android:id="@+id/tvSelected"
@@ -413,7 +416,7 @@
                             android:layout_alignParentRight="true"
                             android:src="@mipmap/ic_plus"
                             app:civ_shadow="true"
-                            app:civ_shadow_radius="1" />
+                            app:civ_shadow_radius="1dp" />
                     </RelativeLayout>
 
                     <LinearLayout

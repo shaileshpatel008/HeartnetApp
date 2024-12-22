@@ -41,8 +41,12 @@ import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
-import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
+import com.rajat.pdfviewer.PdfViewerActivity;
+import com.rajat.pdfviewer.util.saveTo;
+import com.simform.custombottomnavigation.Model;
+import com.simform.custombottomnavigation.SSCustomBottomNavigation;
+//import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
+//import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,7 +86,14 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
     TextView header_text;
 
-    BubbleNavigationLinearView bubbleNavigation;
+    private static final int ID_HOME = 0;
+    private static final int ID_REPORTS = 1;
+    private static final int ID_SETTINGS = 2;
+
+//    BubbleNavigationLinearView bubbleNavigation;
+
+    SSCustomBottomNavigation ssCustomBottomNavigation;
+
     private int EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE = 1;
 
     @Override
@@ -96,7 +107,15 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     protected void onResume() {
         super.onResume();
 
-        bubbleNavigation.setCurrentActiveItem(1);
+//        bubbleNavigation.setCurrentActiveItem(1);
+
+        ssCustomBottomNavigation.setSelectedIndex(1);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        ssCustomBottomNavigation.setSelectedIndex(0);
     }
 
     public void init() {
@@ -108,25 +127,65 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             @Override
             public void onClick(View v) {
                 onBackPressed();
+                ssCustomBottomNavigation.setSelectedIndex(0);
 //                Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
 //                intent.putExtra("PDFPath", "/storage/emulated/0/Documents/Dr.cardio/Reports/Test_2024_03_14_11_23.pdf");
 //                startActivity(intent);
             }
         });
 
-        bubbleNavigation = findViewById(R.id.equal_navigation_bar);
-        bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
-            @Override
-            public void onNavigationChanged(View view, int position) {
-                //navigation changed, do something
-                if(position == 0) {
-                    finish();
-                } else if(position == 2) {
-                    Intent intent = new Intent(ReportActivity.this, MyAccountsActivity.class);
+//        bubbleNavigation = findViewById(R.id.equal_navigation_bar);
+//        bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
+//            @Override
+//            public void onNavigationChanged(View view, int position) {
+//                //navigation changed, do something
+//                if(position == 0) {
+//                    finish();
+//                } else if(position == 2) {
+//                    Intent intent = new Intent(ReportActivity.this, MyAccountsActivity.class);
+//                    startActivity(intent);
+//                    finish();
+//                }
+//            }
+//        });
+
+        ssCustomBottomNavigation = findViewById(R.id.bottomNavigation);
+        ssCustomBottomNavigation.setSelectedIndex(0);
+        ssCustomBottomNavigation.add(new Model(R.drawable.ic_home_new, ID_HOME, ID_HOME, R.string.menu_1, R.string.menu_1));
+        ssCustomBottomNavigation.add(new Model(R.drawable.ic_reports_new, ID_REPORTS, ID_REPORTS, R.string.menu_2, R.string.menu_2));
+        ssCustomBottomNavigation.add(new Model(R.drawable.ic_settings, ID_SETTINGS, ID_SETTINGS, R.string.menu_3, R.string.menu_3));
+        ssCustomBottomNavigation.clearAllCounts();
+
+        ssCustomBottomNavigation.setOnClickMenuListener(item -> {
+            String name;
+            Intent intent;
+            switch (item.getId()) {
+                case ID_HOME:
+                    name = "HOME";
+                    intent = new Intent(ReportActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
-                }
+                    ssCustomBottomNavigation.setSelectedIndex(0);
+                    break;
+                case ID_REPORTS:
+//                    name = "REPORTS";
+//                    intent = new Intent(ReportActivity.this, ReportActivity.class);
+//                    startActivity(intent);
+//                    finish();
+//                    ssCustomBottomNavigation.setSelectedIndex(0);
+                    break;
+                case ID_SETTINGS:
+                    name = "MY ACCOUNTS";
+                    intent = new Intent(ReportActivity.this, MyAccountsActivity.class);
+                    startActivity(intent);
+                    finish();
+                    ssCustomBottomNavigation.setSelectedIndex(0);
+                    break;
+                default:
+                    name = "";
             }
+            // Use the 'name' variable here if needed
+            return null;
         });
 
         tvNoReports = findViewById(R.id.tvNoReports);
@@ -267,7 +326,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        //openPDFFile(file_names.get(position));
+//                        openPDFFile(file_names.get(position));
 
 //                        String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position) + ".pdf";
 //                        Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
@@ -275,13 +334,50 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 //                        intent.putExtra("FileName", file_names.get(position) + ".pdf");
 //                        startActivity(intent);
 
-                        Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
-                        intent.putExtra("PDFPath", filePathList.get(position));
-                        intent.putExtra("FileName", file_names.get(position) + ".pdf");
-                        startActivity(intent);
+
+                        String localFilePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position).replaceAll("@reported@", "") + ".pdf";
+                        if(PathUtil.INTERNET_STATUS) {
+//                            Intent intent = new Intent(ReportActivity.this, PDFViewerActivity.class);
+//                            intent.putExtra("PDFPath", filePathList.get(position));
+//                            intent.putExtra("FileName", file_names.get(position).replaceAll("@reported@", "") + ".pdf");
+//                            intent.putExtra("LocalFilePath", localFilePath);
+//                            startActivity(intent);
+
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(filePathList.get(position)));
+                            startActivity(browserIntent);
+                        } else {
+                            openPDFFile(file_names.get(position));
+                        }
+
                         break;
                     case 1:
-                        shareFile(position);
+                        if(PathUtil.INTERNET_STATUS) {
+                            shareFile(position, filePathList.get(position));
+                            /*String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position).replaceAll("@reported@", "") + ".pdf";
+                            Log.v("Share File Path :::: ", filePath);
+                            File file = new File(filePath);
+                            //File file = new File(mFile.getDirFile(this,mFile.DIR_REPORT),file_names.get(index) + ".pdf");
+                            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+                            sharingIntent.setType("application/pdf");
+                            Uri uri = getUriFromFile(file, ReportActivity.this);
+                            if (uri != null) {
+                                sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                                startActivity(Intent.createChooser(sharingIntent, "share file with"));
+                            }*/
+                        } else {
+                            String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(position).replaceAll("@reported@", "") + ".pdf";
+                            Log.v("Share File Path :::: ", filePath);
+                            File file = new File(filePath);
+                            //File file = new File(mFile.getDirFile(this,mFile.DIR_REPORT),file_names.get(index) + ".pdf");
+                            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+                            sharingIntent.setType("application/pdf");
+                            Uri uri = getUriFromFile(file, ReportActivity.this);
+                            if (uri != null) {
+                                sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                                startActivity(Intent.createChooser(sharingIntent, "share file with"));
+                            }
+                        }
+
                         break;
                     case 2:
                         new AlertDialog.Builder(ReportActivity.this)
@@ -321,6 +417,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         //#Bhavesh Change
         String filepath = appbt.storageBaseDir +"/"+ appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_name + ".pdf";
         File file = new File(filepath);//here schedule1.pdf is the pdf file name which is keep in assets folder.
+        //Log.v("Share PDF Path :::: ",""+file.getAbsolutePath());
 
         //File file = new File(mFile.getDirFile(this,mFile.DIR_REPORT),file_name + ".pdf");
 
@@ -435,7 +532,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         final AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         switch(String.valueOf(item.getTitle())) {
             case "Share":
-                shareFile(info.position);
+                shareFile(info.position, "");
                 return true;
             case "Delete":
                 new AlertDialog.Builder(this)
@@ -473,18 +570,24 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void shareFile(int index) {
+    public void shareFile(int index, String fileURL) {
         //#Bhavesh Change
-        String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(index) + ".pdf";
-        File file = new File(filePath);
-        //File file = new File(mFile.getDirFile(this,mFile.DIR_REPORT),file_names.get(index) + ".pdf");
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("application/pdf");
-        Uri uri = getUriFromFile(file, this);
-        if (uri != null) {
-            sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
-            startActivity(Intent.createChooser(sharingIntent, "share file with"));
-        }
+//        String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + file_names.get(index).replaceAll("@reported@", "") + ".pdf";
+//        Log.v("Share File Path :::: ", filePath);
+//        File file = new File(filePath);
+//        //File file = new File(mFile.getDirFile(this,mFile.DIR_REPORT),file_names.get(index) + ".pdf");
+//        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+//        sharingIntent.setType("application/pdf");
+//        Uri uri = getUriFromFile(file, this);
+//        if (uri != null) {
+//            sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
+//            startActivity(Intent.createChooser(sharingIntent, "share file with"));
+//        }
+
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("text/plain");
+        share.putExtra(Intent.EXTRA_TEXT, fileURL.replaceAll(" ", "%20"));
+        startActivity(Intent.createChooser(share, "Share Text"));
     }
 
     private Uri getUriFromFile(File file, Context context) {
@@ -542,7 +645,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         pd.show();
 
         // url to post our data
-        String url = "https://drcadio.soluspottechnolabs.com/api/ecg-list";
+        String url = "https://cloudecg.drcardio.in/api/ecg-list";
 //        String url = "http://192.168.1.2/api/ecg-list";
 //        loadingPB.setVisibility(View.VISIBLE);
 
@@ -580,7 +683,13 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
                         JSONArray jArray = new JSONArray(respObj.getJSONArray("success_data").toString());
                         for(int i=0; i<jArray.length(); i++) {
                             String fileName = jArray.getJSONObject(i).getString("document_name").toString();
-                            file_names.add(fileName); //jArray.getJSONObject(i).getString("status")+"$$"+
+                            if(jArray.getJSONObject(i).getString("status").contains("reported")) {
+                                file_names.add("@reported@"+fileName);
+                            } else {
+                                file_names.add(fileName);
+                            }
+                            Log.v("Status "+i, jArray.getJSONObject(i).getString("status"));
+                            //  SP file_names.add(fileName); //jArray.getJSONObject(i).getString("status")+"$$"+
 //                            listStatus.add(jArray.getJSONObject(i).getString("status"));
                             filePathList.add(jArray.getJSONObject(i).getString("document_path"));
                         }
@@ -653,7 +762,6 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             }
             @Override
             protected Map<String, String> getParams() {
-                // below line we are creating a map for
                 // storing our values in key and value pair.
                 Map<String, String> params = new HashMap<String, String>();
 

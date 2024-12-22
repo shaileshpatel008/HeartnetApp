@@ -3,15 +3,15 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion '30.0.3'
+    compileSdk 34
+//    buildToolsVersion '30.0.3'
 
     defaultConfig {
         applicationId "com.kavitul.drcardioecgcloud"
         minSdkVersion 21
-        targetSdkVersion 33
-        versionCode 60 //46
-        versionName "1.4.8" //1.3.46
+        targetSdkVersion 34
+        versionCode 60 //60
+        versionName "1.0.0" //1.4.8
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 
@@ -23,6 +23,13 @@ android {
     }
     buildTypes {
         release {
+            debuggable true
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -35,7 +42,8 @@ android {
     buildFeatures {
         viewBinding true
     }
-    lintOptions {
+    namespace 'in.dibc.kavitul.drcardio'
+    lint {
         abortOnError false
     }
 }
@@ -64,7 +72,7 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.8.6'
 
-    implementation 'com.android.volley:volley:1.1.1'
+    implementation 'com.android.volley:volley:1.2.1'
 
     //viewPager2 library
 //    implementation 'androidx.viewpager2:viewpager2:1.1.0-beta02'
@@ -73,33 +81,42 @@ dependencies {
 //    implementation "com.tbuonomo:dotsindicator:5.0"
 
     //dexter permissions
-    implementation "com.karumi:dexter:5.0.0"
+    implementation "com.karumi:dexter:6.2.3"
+
+    implementation 'com.github.dhaval2404:imagepicker:2.1'
 
     implementation 'com.saadahmedev.popup-dialog:popup-dialog:1.0.5'
 
     // circular imageview
-    implementation 'com.mikhaellopez:circularimageview:3.2.0'
+    implementation 'com.mikhaellopez:circularimageview:4.3.1'
 
-    implementation 'com.williamww:silky-signature:0.1.0'
+    implementation 'com.williamww:silky-signature:0.0.6'
 
-    implementation 'org.honorato.multistatetogglebutton:multistatetogglebutton:0.2.2'
+//    implementation 'org.honorato.multistatetogglebutton:multistatetogglebutton:0.2.2'
 
-    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
+    implementation 'com.github.davidmigloz:multi-state-switch:2.0.1'
+
+//    implementation  'io.ak1:bubbletabbar:1.0.8'
+
+    implementation 'com.github.simformsolutions:SSCustomBottomNavigation:3.6'
+
+
+//    implementation 'com.github.barteksc:android-pdf-viewer:2.7.0'
 
     implementation 'org.androidannotations:androidannotations-api:4.6.0'
     annotationProcessor "org.androidannotations:androidannotations:4.6.0"
 
-    implementation 'com.gauravk.bubblenavigation:bubblenavigation:1.0.7'
+//    implementation 'com.gauravk.bubblenavigation:bubblenavigation:1.0.7'
 
     implementation 'com.gauravbhola.ripplepulsebackground:library:1.0.0'
 
-    implementation 'com.kuassivi.android.view:ripple-pulse-layout:0.1.9'
+    implementation 'io.github.afreakyelf:Pdf-Viewer:2.1.1'
+
+//    implementation 'com.kuassivi.android.view:ripple-pulse-layout:0.1.9'
 
     implementation 'com.codemybrainsout.onboarding:onboarder:1.0.4'
 
-//    implementation 'com.github.afreakyelf:Pdf-Viewer:2.0.4'
-
-    implementation 'com.google.android.play:core:1.6.1'
+    implementation 'com.google.android.play:app-update:2.1.0'
 
     //Glide
     implementation 'com.github.bumptech.glide:glide:4.16.0'

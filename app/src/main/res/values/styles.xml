@@ -12,6 +12,7 @@
         <item name="titleTextColor">@color/white</item>
         <item name="color">@color/white</item>
         <item name="android:textColorSecondary">@color/white</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
     </style>
     <style name="TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:textSize">@dimen/_18sdp</item>

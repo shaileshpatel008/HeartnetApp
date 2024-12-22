@@ -226,7 +226,7 @@ public class GPSTracker extends Service implements LocationListener {
         });
 
         //On pressing cancel button
-        alertDialog.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+        alertDialog.setNegativeButton(in.dibc.kavitul.bluetoothmodule.R.string.cancel, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which)

@@ -164,11 +164,28 @@ public class ImagePickerActivity extends AppCompatActivity {
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         if (report.areAllPermissionsGranted()) {
                             try{
-                                Intent pickPhoto = new Intent(Intent.ACTION_PICK,
-                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                               // if(isIntentAvailable(pickPhoto)) {
-                                    startActivityForResult(pickPhoto, REQUEST_GALLERY_IMAGE);
-                                //}
+//                                Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+//                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//                               // if(isIntentAvailable(pickPhoto)) {
+//                                    startActivityForResult(pickPhoto, REQUEST_GALLERY_IMAGE);
+//                                //}
+
+                                if (Build.VERSION.SDK_INT < 19) {
+                                    Intent intent = new Intent();
+                                    intent.setType("image/jpeg");
+                                    intent.setAction(Intent.ACTION_GET_CONTENT);
+
+                                    startActivityForResult(Intent.createChooser(intent,
+                                                    "Select image"),
+                                            REQUEST_GALLERY_IMAGE);
+
+                                } else {
+                                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                                    intent.setType("image/jpeg");
+                                    startActivityForResult(intent,
+                                            REQUEST_GALLERY_IMAGE);
+                                }
                             } catch(Exception e){
                                 //Toast.makeText(ImagePickerActivity.this, "Intent not found", Toast.LENGTH_SHORT).show();
                                 //e.printStackTrace();

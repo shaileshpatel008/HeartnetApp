@@ -50,7 +50,7 @@ public class IntroductionActivity extends AhoyOnboarderActivity {
 
         for (AhoyOnboarderCard page : pages) {
             page.setTitleColor(R.color.black);
-            page.setDescriptionColor(R.color.grey_600);
+            page.setDescriptionColor(com.codemybrainsout.onboarder.R.color.grey_600);
         }
 
         setFinishButtonTitle("Get Started");

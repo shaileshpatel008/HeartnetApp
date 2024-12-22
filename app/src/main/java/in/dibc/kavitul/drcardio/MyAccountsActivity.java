@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -40,14 +41,15 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
-import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
-import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
+//import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
+//import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
 import com.saadahmedsoft.popupdialog.PopupDialog;
 import com.saadahmedsoft.popupdialog.Styles;
 import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener;
+import com.simform.custombottomnavigation.Model;
+import com.simform.custombottomnavigation.SSCustomBottomNavigation;
 import com.williamww.silkysignature.views.SignaturePad;
 
-import org.honorato.multistatetogglebutton.MultiStateToggleButton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -74,11 +76,17 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
 
     ImageView header_left_btn;
 
-    BubbleNavigationLinearView bubbleNavigation;
+//    BubbleNavigationLinearView bubbleNavigation;
+
+    SSCustomBottomNavigation ssCustomBottomNavigation;
 
     LinearLayout llBack, llLoadData, llProfile, llSettings, llHelp, llShareApp, llFeedback, llReview, llSignout;
 
     TextView tvVersion;
+
+    private static final int ID_HOME = 0;
+    private static final int ID_REPORTS = 1;
+    private static final int ID_SETTINGS = 2;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,7 +101,15 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
     protected void onResume() {
         super.onResume();
 
-        bubbleNavigation.setCurrentActiveItem(2);
+//        bubbleNavigation.setCurrentActiveItem(2);
+
+        ssCustomBottomNavigation.setSelectedIndex(2);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        ssCustomBottomNavigation.setSelectedIndex(0);
     }
 
     public void init() {
@@ -107,6 +123,7 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
             @Override
             public void onClick(View v) {
                 onBackPressed();
+                ssCustomBottomNavigation.setSelectedIndex(0);
             }
         });
         header_left_btn.setOnClickListener(new View.OnClickListener() {
@@ -116,19 +133,57 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
             }
         });
 
-        bubbleNavigation = findViewById(R.id.equal_navigation_bar);
-        bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
-            @Override
-            public void onNavigationChanged(View view, int position) {
-                //navigation changed, do something
-                if(position == 0) {
-                    finish();
-                } else if(position == 1) {
-                    Intent intent = new Intent(MyAccountsActivity.this, ReportActivity.class);
+//        bubbleNavigation = findViewById(R.id.equal_navigation_bar);
+//        bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
+//            @Override
+//            public void onNavigationChanged(View view, int position) {
+//                //navigation changed, do something
+//                if(position == 0) {
+//                    finish();
+//                } else if(position == 1) {
+//                    Intent intent = new Intent(MyAccountsActivity.this, ReportActivity.class);
+//                    startActivity(intent);
+//                    finish();
+//                }
+//            }
+//        });
+
+        ssCustomBottomNavigation = findViewById(R.id.bottomNavigation);
+        ssCustomBottomNavigation.setSelectedIndex(0);
+        ssCustomBottomNavigation.add(new Model(R.drawable.ic_home_new, ID_HOME, ID_HOME, R.string.menu_1, R.string.menu_1));
+        ssCustomBottomNavigation.add(new Model(R.drawable.ic_reports_new, ID_REPORTS, ID_REPORTS, R.string.menu_2, R.string.menu_2));
+        ssCustomBottomNavigation.add(new Model(R.drawable.ic_settings, ID_SETTINGS, ID_SETTINGS, R.string.menu_3, R.string.menu_3));
+        ssCustomBottomNavigation.clearAllCounts();
+
+        ssCustomBottomNavigation.setOnClickMenuListener(item -> {
+            String name;
+            Intent intent;
+            switch (item.getId()) {
+                case ID_HOME:
+                    name = "HOME";
+                    intent = new Intent(MyAccountsActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
-                }
+                    ssCustomBottomNavigation.setSelectedIndex(0);
+                    break;
+                case ID_REPORTS:
+                    name = "REPORTS";
+                    intent = new Intent(MyAccountsActivity.this, ReportActivity.class);
+                    startActivity(intent);
+                    finish();
+                    ssCustomBottomNavigation.setSelectedIndex(0);
+                    break;
+                case ID_SETTINGS:
+                    /*name = "MY ACCOUNTS";
+                    intent = new Intent(MyAccountsActivity.this, MyAccountsActivity.class);
+                    startActivity(intent);
+                    ssCustomBottomNavigation.setSelectedIndex(0);*/
+                    break;
+                default:
+                    name = "";
             }
+            // Use the 'name' variable here if needed
+            return null;
         });
 
         llLoadData = findViewById(R.id.llLoadData);
@@ -173,11 +228,13 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
             @Override
             public void onClick(View v) {
                 try {
+                    PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                    String packageName = pInfo.packageName;
                     Intent shareIntent = new Intent(Intent.ACTION_SEND);
                     shareIntent.setType("text/plain");
                     shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Dr. Cardio app");
                     String shareMessage= "Revolutionize your patient's heart health with Dr. Cardio! For cardiac care and proactive wellness management Download the app now. #DrCardio #HeartHealth\n\n";
-                    shareMessage = shareMessage + "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID +"\n\n";
+                    shareMessage = shareMessage + "https://play.google.com/store/apps/details?id=" + packageName +"\n\n";
                     shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
                     startActivity(Intent.createChooser(shareIntent, "choose one"));
                 } catch(Exception e) {
@@ -235,10 +292,10 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 PrefHelper.setBoolean("isUserLoggedIn", false);
-                                PrefHelper.setString("UserName", "");
-                                PrefHelper.setString("UserEmail", "");
-                                PrefHelper.setString("Token", "");
-                                PrefHelper.deleteAllPreferences();
+//                                PrefHelper.setString("UserName", "");
+//                                PrefHelper.setString("UserEmail", "");
+//                                PrefHelper.setString("Token", "");
+//                                PrefHelper.deleteAllPreferences();
                                 Intent intent = new Intent(MyAccountsActivity.this, SignInActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startActivity(intent);
@@ -252,7 +309,14 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
         });
 
         tvVersion = findViewById(R.id.tvVersion);
-        String versionName = BuildConfig.VERSION_NAME;
+        PackageInfo pInfo = null;
+        try {
+            pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String versionName = pInfo.versionName;
+//        String versionName = BuildConfig.VERSION_NAME;
         tvVersion.setText("Version "+versionName);
 
     }

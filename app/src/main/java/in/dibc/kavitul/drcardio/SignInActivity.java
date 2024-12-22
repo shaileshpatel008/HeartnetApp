@@ -28,7 +28,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import in.dibc.kavitul.bluetoothmodule.AppBluetoothHelper;
@@ -90,6 +94,13 @@ public class SignInActivity extends AppCompatActivity {
                 }
             }
         });
+
+        if(PrefHelper.getString("UserEmail", "").trim().length() > 0) {
+            edtUserName.setText(PrefHelper.getString("UserEmail", ""));
+        }
+        if(PrefHelper.getString("Password", "").trim().length() > 0) {
+            edtPassword.setText(PrefHelper.getString("Password", ""));
+        }
     }
 
     private void callSignInApi() {
@@ -100,7 +111,7 @@ public class SignInActivity extends AppCompatActivity {
         pd.show();
 
         // url to post our data
-        String url = "https://drcadio.soluspottechnolabs.com/api/login";
+        String url = "https://cloudecg.drcardio.in/api/login";
 //        String url = "http://192.168.1.2:8000/api/login";
 
 //        loadingPB.setVisibility(View.VISIBLE);
@@ -136,16 +147,23 @@ public class SignInActivity extends AppCompatActivity {
                     if(respObj.getString("status").equalsIgnoreCase("success")) {
                         Log.v("User Name :: ", respObj.getJSONObject("success_data").getString("name"));
                         pd.dismiss();
-                        edtUserName.setText("");
-                        edtPassword.setText("");
                         PrefHelper.setBoolean("isUserLoggedIn", true);
                         PrefHelper.setString("UserName", respObj.getJSONObject("success_data").getString("name"));
+                        PrefHelper.setInt("UserID", respObj.getJSONObject("success_data").getInt("user_id"));
+                        PrefHelper.setString("Password", edtPassword.getText().toString().trim());
                         PrefHelper.setString("UserEmail", respObj.getJSONObject("success_data").getString("email"));
                         PrefHelper.setString("Token", respObj.getJSONObject("success_data").getString("remember_token"));
                         settings.doctor_name = respObj.getJSONObject("success_data").getString("doctor_name");
                         settings.doctor_address = respObj.getJSONObject("success_data").getString("address");
                         settings.doctor_website = respObj.getJSONObject("success_data").getString("hospital_name");
                         settings.saveSettings();
+                        edtUserName.setText("");
+                        edtPassword.setText("");
+                        Date c = Calendar.getInstance().getTime();
+                        System.out.println("Current time => " + c);
+                        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+                        String formattedDate = df.format(c);
+                        PrefHelper.setString("TodayDate", formattedDate);
                         Toast.makeText(SignInActivity.this, "User login successfully", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(SignInActivity.this, MainActivity.class);
                         startActivity(intent);

@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import in.dibc.kavitul.drcardio.BuildConfig;
 import in.dibc.kavitul.drcardio.R;
 
 /**
@@ -200,11 +199,19 @@ public final class ImagePicker {
             // in the androidmanifest.xml
             // Or if the user has granted access to the camera.
             // See https://developer.android.com/reference/android/provider/MediaStore.html#ACTION_IMAGE_CAPTURE
+
+            PackageInfo pInfo = null;
+            try {
+                pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            } catch (PackageManager.NameNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
             if (!appManifestContainsPermission(context, Manifest.permission.CAMERA) || hasCameraAccess(context)) {
                 Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 takePhotoIntent.putExtra("return-data", true);
                 takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider",
+                        FileProvider.getUriForFile(context, pInfo.packageName + ".provider",
                                 ImageUtils.getTemporalFile(context, String.valueOf(mPickImageRequestCode))));
                 //Uri.fromFile(ImageUtils.getTemporalFile(context, String.valueOf(mPickImageRequestCode))));
                 intentList = addIntentsToList(context, intentList, takePhotoIntent);
@@ -283,6 +290,14 @@ public final class ImagePicker {
     @Nullable
     public static Bitmap getImageFromResult(Context context, int requestCode, int resultCode,
                                             Intent imageReturnedIntent) {
+
+        PackageInfo pInfo = null;
+        try {
+            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
         Log.i(TAG, "getImageFromResult() called with: " + "resultCode = [" + resultCode + "]");
         Bitmap bm = null;
         if (resultCode == Activity.RESULT_OK && requestCode == mPickImageRequestCode) {
@@ -294,7 +309,7 @@ public final class ImagePicker {
             if (isCamera) {     /** CAMERA **/
                 //selectedImage = Uri.fromFile(imageFile);
                 selectedImage = FileProvider.getUriForFile(context,
-                        BuildConfig.APPLICATION_ID + ".provider", imageFile);
+                        pInfo.packageName + ".provider", imageFile);
 
 
             } else {            /** ALBUM **/
@@ -382,6 +397,14 @@ public final class ImagePicker {
     public static InputStream getInputStreamFromResult(Context context, int requestCode, int resultCode,
                                                        Intent imageReturnedIntent) {
         Log.i(TAG, "getFileFromResult() called with: " + "resultCode = [" + resultCode + "]");
+
+        PackageInfo pInfo = null;
+        try {
+            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
         if (resultCode == Activity.RESULT_OK && requestCode == mPickImageRequestCode) {
             File imageFile = ImageUtils.getTemporalFile(context, String.valueOf(mPickImageRequestCode));
             Uri selectedImage;
@@ -391,7 +414,7 @@ public final class ImagePicker {
             if (isCamera) {     /** CAMERA **/
                 //selectedImage = Uri.fromFile(imageFile);
                 selectedImage = FileProvider.getUriForFile(context,
-                        BuildConfig.APPLICATION_ID + ".provider", imageFile);
+                        pInfo.packageName + ".provider", imageFile);
             } else {            /** ALBUM **/
                 selectedImage = imageReturnedIntent.getData();
             }

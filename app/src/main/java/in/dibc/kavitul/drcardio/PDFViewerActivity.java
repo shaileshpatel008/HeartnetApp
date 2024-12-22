@@ -1,5 +1,7 @@
 package in.dibc.kavitul.drcardio;
 
+import static android.os.Build.VERSION.SDK_INT;
+
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -25,8 +27,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
-import com.github.barteksc.pdfviewer.PDFView;
+//import com.github.barteksc.pdfviewer.PDFView;
+//import com.github.barteksc.pdfviewer.listener.OnRenderListener;
+//import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
+//import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.rajat.pdfviewer.PdfRendererView;
+import com.rajat.pdfviewer.PdfViewerActivity;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -41,10 +48,16 @@ import javax.net.ssl.HttpsURLConnection;
 import in.dibc.kavitul.bluetoothmodule.AppBluetoothHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mLog;
+import in.dibc.kavitul.drcardio.utils.PathUtil;
 
 public class PDFViewerActivity extends AppCompatActivity {
 
-    PDFView pdfView;
+    private static final String TAG = "PDFViewerActivity";
+
+    PdfRendererView pdfView;
+
+//    WebView webview;
+    ProgressDialog pDialog;
 
     ImageView ivBack;
 
@@ -54,7 +67,7 @@ public class PDFViewerActivity extends AppCompatActivity {
 
     Context context;
 
-    String filePath = "", fileName = "";
+    String filePath = "", fileName = "", localFilePath = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,22 +82,35 @@ public class PDFViewerActivity extends AppCompatActivity {
     private void initApp() {
 
         pdfView = findViewById(R.id.pdfView);
+
+//        webview = (WebView) findViewById(R.id.webview);
+//        webview.getSettings().setJavaScriptEnabled(true);
+//        listener();
+//
+//        pDialog = new ProgressDialog(PDFViewerActivity.this);
+//        pDialog.setTitle("PDF");
+//        pDialog.setMessage("Loading...");
+//        pDialog.setIndeterminate(false);
+//        pDialog.setCancelable(false);
+
         if(getIntent() != null) {
             filePath = getIntent().getStringExtra("PDFPath");
             fileName = getIntent().getStringExtra("FileName");
+            localFilePath = getIntent().getStringExtra("LocalFilePath");
             Log.v("File Path :: ", ""+filePath);
-//            Toast.makeText(PDFViewerActivity.this, "PSD Path :: "+filePath, Toast.LENGTH_SHORT).show();
-            //displayFromFiles(new File("file: "+filePath));
+//            webview.loadUrl(filePath.replaceAll(" ", "%20"));
+            /*PdfViewerActivity.Companion.launchPdfFromUrl(
+                    context = this,
+                    PdfViewerActivity.Companion.pdf
+            );*/
+
         }
 
         //pdfView.fromUri(Uri.parse(filePath.replaceAll(" ", "%20"))).load();
 //        pdfView.fromUri(Uri.parse("https://www.orimi.com/pdf-test.pdf"));
 
         context = this;
-        new RetrievePDFfromUrl().execute(filePath.replaceAll(" ", "%20"));
-
-//        File file = new File(filePath);
-//        pdfView.fromFile(file).load();
+//        new RetrievePDFfromUrl().execute(filePath.replaceAll(" ", "%20"));
 
         tvTitle = findViewById(R.id.tvTitle);
         tvTitle.setText(fileName);
@@ -101,24 +127,46 @@ public class PDFViewerActivity extends AppCompatActivity {
         ivShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Uri uri = FileProvider.getUriForFile(Objects.requireNonNull(getApplicationContext()),
-//                        BuildConfig.APPLICATION_ID + ".provider", file);
-//
-//                Intent share = new Intent();
-//                share.setAction(Intent.ACTION_SEND);
-//                share.setType("application/pdf");
-//                share.putExtra(Intent.EXTRA_STREAM, uri);
-//                share.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-//                startActivity(Intent.createChooser(share, "Share PDF"));
 
-
-
-                Intent share = new Intent(Intent.ACTION_SEND);
-                share.setType("text/plain");
-                share.putExtra(Intent.EXTRA_TEXT, filePath.replaceAll(" ", "%20"));
-                startActivity(Intent.createChooser(share, "Share Text"));
+                if(PathUtil.INTERNET_STATUS) {
+                    Intent share = new Intent(Intent.ACTION_SEND);
+                    share.setType("text/plain");
+                    share.putExtra(Intent.EXTRA_TEXT, filePath.replaceAll(" ", "%20"));
+                    startActivity(Intent.createChooser(share, "Share Text"));
+                } else {
+                    String filePath = localFilePath;
+                    Log.v("Share File Path :::: ", filePath);
+                    File file = new File(filePath);
+                    //File file = new File(mFile.getDirFile(this,mFile.DIR_REPORT),file_names.get(index) + ".pdf");
+                    Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+                    sharingIntent.setType("application/pdf");
+                    Uri uri = getUriFromFile(file, PDFViewerActivity.this);
+                    if (uri != null) {
+                        sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                        startActivity(Intent.createChooser(sharingIntent, "share file with"));
+                    }
+                }
             }
         });
+    }
+
+    private Uri getUriFromFile(File file, Context context) {
+        Uri uri = null;
+        if (SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+//            Uri.fromFile(file)
+            uri = Uri.parse("file://" + file.getAbsolutePath());
+        } else {
+            try {
+                uri = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", file);
+            } catch (Exception e) {
+                if (!e.getMessage().equals("") || e.getMessage().contains("ProviderInfo.loadXmlMetaData") == true) {
+                    Log.e(TAG, "getUriFromFile: FileProvider is not set or doesn't have needed permissions");
+                } else {
+                    Log.d(TAG, "getUriFromFile: ", e);
+                }
+            }
+        }
+        return uri;
     }
 
     @Override
@@ -173,7 +221,19 @@ public class PDFViewerActivity extends AppCompatActivity {
         protected void onPostExecute(InputStream inputStream) {
             // after the execution of our async
             // task we are loading our pdf in our pdf view.
-            pdfView.fromStream(inputStream).load();
+//            pdfView.fromStream(inputStream)
+//                    .fitEachPage(false)
+//                    .enableSwipe(true)
+//                    .enableDoubletap(true)
+//                    .pageFling(true)
+//                    .pageSnap(true)
+//                    .pageFitPolicy(FitPolicy.BOTH)
+//                    .nightMode(false)
+//                    .spacing(20)
+//                    .scrollHandle(new DefaultScrollHandle(PDFViewerActivity.this))
+//                    .load();
+//            pdfView.useBestQuality(true);
+
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {

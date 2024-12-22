@@ -1,5 +1,7 @@
 package in.dibc.kavitul.drcardio;
 
+import static com.google.android.gms.common.util.CollectionUtils.listOf;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -28,6 +30,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,6 +40,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.davidmiguel.multistateswitch.MultiStateSwitch;
+import com.davidmiguel.multistateswitch.State;
+import com.davidmiguel.multistateswitch.StateListener;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -44,8 +50,8 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.williamww.silkysignature.views.SignaturePad;
 
-import org.honorato.multistatetogglebutton.MultiStateToggleButton;
-import org.honorato.multistatetogglebutton.ToggleButton;
+//import org.honorato.multistatetogglebutton.MultiStateToggleButton;
+//import org.honorato.multistatetogglebutton.ToggleButton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,13 +72,15 @@ import in.dibc.kavitul.drcardio.SupportClass.mLog;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
 import in.dibc.kavitul.drcardio.utils.PathUtil;
 
-public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
+public class SettingsActivity extends AppCompatActivity implements View.OnClickListener, StateListener {
     String TAG = "Settings_Activity";
 
     public static final int REQUEST_IMAGE = 100;
     SwitchCompat settings_test_mode, switch_csv;
 
-    MultiStateToggleButton mstb;
+    private static final int TOGGLE_ID = 1;
+
+    MultiStateSwitch mstb;
     EditText settings_doctor_name, settings_doctor_address, settings_doctor_contactno, settings_doctor_website, settings_doctor_email;
     Spinner spinner_filter, spinner_gain, spinner_language, spinner_log;
     Button settings_save;
@@ -160,21 +168,25 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         }
 
         mstb = findViewById(R.id.mstb_multi_id);
-        mstb.enableMultipleChoice(false);
-        //mstb.setColorRes(R.color.colorPrimary, R.color.colorPrimaryLight);
-        mstb.setPressedColors(getResources().getColor(R.color.colorWhite), getResources().getColor(R.color.colorPrimary));
-        mstb.setNotPressedColors(getResources().getColor(R.color.colorPrimary), getResources().getColor(R.color.colorPrimaryLight));
-        mstb.setOnValueChangedListener(new ToggleButton.OnValueChangedListener() {
-            @Override
-            public void onValueChanged(int position) {
-                Log.d(TAG, "Position: " + position);
-                if(position == 0) {
-                    tvSelected.setText("You selected ECG Mode");
-                } else {
-                    tvSelected.setText("You selected TEST Mode");
-                }
-            }
-        });
+//        mstb.enableMultipleChoice(false);
+//        mstb.setPressedColors(getResources().getColor(R.color.colorWhite), getResources().getColor(R.color.colorPrimary));
+//        mstb.setNotPressedColors(getResources().getColor(R.color.colorPrimary), getResources().getColor(R.color.colorPrimaryLight));
+//        mstb.setOnValueChangedListener(new ToggleButton.OnValueChangedListener() {
+//            @Override
+//            public void onValueChanged(int position) {
+//                Log.d(TAG, "Position: " + position);
+//                if(position == 0) {
+//                    tvSelected.setText("You selected ECG Mode");
+//                } else {
+//                    tvSelected.setText("You selected TEST Mode");
+//                }
+//            }
+//        });
+
+        mstb.addStatesFromStrings(listOf("ECG", "TEST"));
+        mstb.addStateListener(this);
+
+
 
         if (getIntent() != null) {
             if(getIntent().getExtras().getString("From").equalsIgnoreCase("Settings")) {
@@ -196,10 +208,12 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         //settings_test_mode.setChecked(settings.test_mode.equals("true"));
         if(settings.test_mode.equals("true")) {
             tvSelected.setText("You selected TEST Mode");
-            mstb.setValue(1);
+//            mstb.setValue(1);
+            mstb.selectState(1, true);
         } else {
             tvSelected.setText("You selected ECG Mode");
-            mstb.setValue(0);
+//            mstb.setValue(0);
+            mstb.selectState(0, true);
         }
         switch_csv.setChecked(settings.csv);
 
@@ -284,12 +298,12 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         mCompressButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bitmap signatureBitmap = mSilkySignaturePad.getCompressedSignatureBitmap(50);
-                if (addJpgSignatureToGallery(signatureBitmap)) {
-                    Toast.makeText(SettingsActivity.this, "50% compressed signature saved into the Gallery", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(SettingsActivity.this, "Unable to store the signature", Toast.LENGTH_SHORT).show();
-                }
+//                Bitmap signatureBitmap = mSilkySignaturePad.getCompressedSignatureBitmap(50);
+//                if (addJpgSignatureToGallery(signatureBitmap)) {
+//                    Toast.makeText(SettingsActivity.this, "50% compressed signature saved into the Gallery", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    Toast.makeText(SettingsActivity.this, "Unable to store the signature", Toast.LENGTH_SHORT).show();
+//                }
             }
         });
     }
@@ -307,7 +321,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
             settings.reports[0] = true;
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(SettingsActivity.this);
             alertDialog.setTitle("At least 1 report required. 1 report is now selected.");
-            alertDialog.setPositiveButton(R.string.ok, null);
+            alertDialog.setPositiveButton(in.dibc.kavitul.bluetoothmodule.R.string.ok, null);
             AlertDialog alert = alertDialog.create();
             alert.setCanceledOnTouchOutside(false);
             alert.show();
@@ -379,7 +393,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                     settings.reports[which]=isChecked;
                 }
             })
-            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            .setPositiveButton(in.dibc.kavitul.bluetoothmodule.R.string.ok, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     setReportString();
                 }
@@ -481,11 +495,13 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     private void saveSettings(){
         //Get value of switch test mode
         //settings.test_mode = settings_test_mode.isChecked() ? "true" : "false";
-        if(mstb.getValue() == 1) {
+        if(mstb.getId() == TOGGLE_ID) {
             settings.test_mode = "true";
+            mstb.selectState(1);
             tvSelected.setText("You selected TEST Mode");
         } else {
             settings.test_mode = "false";
+            mstb.selectState(0);
             tvSelected.setText("You selected ECG Mode");
         }
         settings.csv = switch_csv.isChecked();
@@ -765,5 +781,21 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
             e.printStackTrace();
         }
         return result;
+    }
+
+    @Override
+    public void onStateSelected(int i, @NonNull State state) {
+//        Log.v("State :: ", ""+i);
+//        Toast.makeText(this, "State :: "+state.getSelectedText(), Toast.LENGTH_SHORT).show();
+//        String stateName = getString(state.text);
+        if (i == 0) {
+            tvSelected.setText("You selected ECG Mode");
+            settings.test_mode = "false";
+//            mstb.selectState(1, true);
+        } else {
+            tvSelected.setText("You selected Test Mode");
+            settings.test_mode = "true";
+//            mstb.selectState(0);
+        }
     }
 }

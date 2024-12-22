@@ -73,10 +73,24 @@
             android:layout_marginTop="@dimen/_minus30sdp"
             android:orientation="vertical">
 
-                <com.github.barteksc.pdfviewer.PDFView
+                <!--<com.github.barteksc.pdfviewer.PDFView
                     android:id="@+id/pdfView"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:scrollbars="vertical"/>-->
+
+                <com.rajat.pdfviewer.PdfRendererView
+                    android:id="@+id/pdfView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:pdfView_divider="@drawable/pdf_viewer_divider"
+                    app:pdfView_showDivider="false" />
+
+                <!--<WebView
+                    android:layout_width="match_parent"
+                    android:background="#ffffff"
+                    android:layout_height="match_parent"
+                    android:id="@+id/webview"></WebView>-->
         </LinearLayout>
 
 </LinearLayout>

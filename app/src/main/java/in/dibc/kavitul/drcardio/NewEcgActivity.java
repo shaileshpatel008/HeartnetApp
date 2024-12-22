@@ -112,7 +112,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
     private LinearLayout ll_loading;
     // TODO: 2/2/21 try to use threadpool or thread factory for multithreading
 
-    String upload_URL = "https://drcadio.soluspottechnolabs.com/api/upload-pdf"; //https://rainbowline.soluspottechnolabs.com/api/uploadCardioPdf";
+    String upload_URL = "https://cloudecg.drcardio.in/api/upload-pdf"; // https://drcadio.soluspottechnolabs.com/api/upload-pdf"; //https://rainbowline.soluspottechnolabs.com/api/uploadCardioPdf";
     RequestQueue rQueue;
 
     @Override
@@ -479,7 +479,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
 //            ecgData.chart[i].setScaleYEnabled(false);
             ecgData.chart[ch].getDescription().setText(ecgData.lead_name[ch]);
             ecgData.chart[ch].getDescription().setTextColor(Color.GREEN);
-            ecgData.chart[ch].getDescription().setTextSize(appbt.res.getDimension(R.dimen._14sdp));
+            ecgData.chart[ch].getDescription().setTextSize(appbt.res.getDimension(com.intuit.sdp.R.dimen._14sdp));
             ecgData.chart[ch].getDescription().setPosition(15f, 75f);
             ecgData.chart[ch].getDescription().setTextAlign(Paint.Align.LEFT);
             ecgData.chart[ch].setLogEnabled(false); // SP 888888888
@@ -529,7 +529,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         if (ecgData.isReading) {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(NewEcgActivity.this);
             alertDialog.setTitle("Are you sure you want to stop reading and return to main screen?");
-            alertDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            alertDialog.setPositiveButton(in.dibc.kavitul.bluetoothmodule.R.string.yes, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     stopReading();
                     finish();
@@ -783,7 +783,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
 
                     ll_loading.setVisibility(View.GONE);
                     if (isGenerated[0]) {
-                        displayAlertToView();
+//                        displayAlertToView();
 
                         FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(NewEcgActivity.this);
                         Bundle params2 = new Bundle();
@@ -809,7 +809,102 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                         Log.v("Upload Path :: ", filepath);
 
                         if(PathUtil.INTERNET_STATUS) {
-                            uploadPDF(appendFileName + "_" + ecgData.date_time + ".pdf", Uri.fromFile(file), ecgAnalysis.analysisArray);
+                            //uploadPDF(appendFileName + "_" + ecgData.date_time + ".pdf", Uri.fromFile(file), ecgAnalysis.analysisArray);
+
+                            try {
+                                JSONObject jDeviceInfo = new JSONObject();
+                                try {
+//                        jDeviceInfo.put("OS", System.getProperty("os.version"));
+                                    jDeviceInfo.put("API Level", android.os.Build.VERSION.SDK_INT);
+                                    jDeviceInfo.put("Device", android.os.Build.DEVICE);
+                                    jDeviceInfo.put("Model", android.os.Build.MODEL );
+                                    jDeviceInfo.put("FullDeviceInfo", Build.BRAND+" "+android.os.Build.MODEL);
+                                    Log.v("Device Informations :: ", jDeviceInfo.toString());
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                                JSONObject jPatientInfo = new JSONObject();
+                                try {
+                                    jPatientInfo.put("Id", ecgData.patient_id);
+                                    jPatientInfo.put("Name", ecgData.patient_name);
+                                    jPatientInfo.put("Age", ecgData.patient_age);
+                                    jPatientInfo.put("Comments", ecgData.patient_comments);
+                                    jPatientInfo.put("Gender", ecgData.patient_sex);
+                                    jPatientInfo.put("DeviceID", ecgData.patinet_deviceid);
+                                    Log.v("Patient Informations :: ", jPatientInfo.toString());
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+//                                Map<String, String> params = new HashMap<>();
+//                                params.put("device_id", ecgData.patinet_deviceid);
+//                                params.put("latitude", ""+PathUtil.userLatitude);
+//                                params.put("longitude", ""+PathUtil.userLongitude);
+//                                params.put("device_info", jDeviceInfo.toString());
+//                                params.put("patient_info", jDeviceInfo.toString());
+//                                params.put("address", ""+PathUtil.userAddress);
+
+                                float[][] analysis = ecgAnalysis.analysisArray;
+                                DecimalFormat df = new DecimalFormat();
+                                df.setMaximumFractionDigits(2);
+
+                                int rr = 0;
+                                if((int) analysis[1][0] > 0){
+                                    rr = Math.round((60000 / analysis[1][0]));
+                                }
+
+                                ArrayList<ECGDataModel> listECGDataModel = new ArrayList<>();
+                                if(PrefHelper.getECGDataListResponse("ECGDataList") != null) {
+                                    listECGDataModel = PrefHelper.getECGDataListResponse("ECGDataList");
+                                    ECGDataModel ecgDataModel = new ECGDataModel();
+                                    ecgDataModel.setAddress(""+PathUtil.userAddress);
+                                    ecgDataModel.setDevice_id(ecgData.patinet_deviceid);
+                                    ecgDataModel.setDevice_info(jDeviceInfo.toString());
+                                    ecgDataModel.setLatitude(""+PathUtil.userLatitude);
+                                    ecgDataModel.setLongitude(""+PathUtil.userLongitude);
+                                    ecgDataModel.setPatient_info(jPatientInfo.toString());
+                                    ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
+                                    ecgDataModel.setPdf_file_path(filepath);
+                                    ecgDataModel.setHr((int) analysis[1][0] +"");
+                                    ecgDataModel.setR(df.format(analysis[1][1]) +"");
+                                    ecgDataModel.setRr(rr +"");
+                                    ecgDataModel.setPr(Math.round(analysis[1][7]*1000) +"");
+                                    ecgDataModel.setQrs(Math.round(analysis[1][6]*1000) +"");
+                                    ecgDataModel.setQt(Math.round(analysis[1][6]*1000) +"");
+                                    ecgDataModel.setQtc(Math.round((analysis[1][8]/analysis[1][11])*1000) +"");
+                                    ecgDataModel.setQt_by_qtc(df.format(analysis[1][11])+"");
+                                    listECGDataModel.add(ecgDataModel);
+                                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
+                                } else {
+                                    ECGDataModel ecgDataModel = new ECGDataModel();
+                                    ecgDataModel.setAddress(""+PathUtil.userAddress);
+                                    ecgDataModel.setDevice_id(ecgData.patinet_deviceid);
+                                    ecgDataModel.setDevice_info(jDeviceInfo.toString());
+                                    ecgDataModel.setLatitude(""+PathUtil.userLatitude);
+                                    ecgDataModel.setLongitude(""+PathUtil.userLongitude);
+                                    ecgDataModel.setPatient_info(jPatientInfo.toString());
+                                    ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
+                                    ecgDataModel.setPdf_file_path(filepath);
+                                    ecgDataModel.setHr((int) analysis[1][0] +"");
+                                    ecgDataModel.setR(df.format(analysis[1][1]) +"");
+                                    ecgDataModel.setRr(rr +"");
+                                    ecgDataModel.setPr(Math.round(analysis[1][7]*1000) +"");
+                                    ecgDataModel.setQrs(Math.round(analysis[1][6]*1000) +"");
+                                    ecgDataModel.setQt(Math.round(analysis[1][6]*1000) +"");
+                                    ecgDataModel.setQtc(Math.round((analysis[1][8]/analysis[1][11])*1000) +"");
+                                    ecgDataModel.setQt_by_qtc(df.format(analysis[1][11])+"");
+                                    listECGDataModel.add(ecgDataModel);
+                                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
+                                }
+
+                                openGeneratedPDF();
+
+//                                Intent intent = new Intent(NewEcgActivity.this, MainActivity.class);
+//                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                startActivity(intent);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         } else {
 
                             try {
@@ -863,7 +958,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                                     ecgDataModel.setDevice_info(jDeviceInfo.toString());
                                     ecgDataModel.setLatitude(""+PathUtil.userLatitude);
                                     ecgDataModel.setLongitude(""+PathUtil.userLongitude);
-                                    ecgDataModel.setPatient_info(jDeviceInfo.toString());
+                                    ecgDataModel.setPatient_info(jPatientInfo.toString());
                                     ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
                                     ecgDataModel.setPdf_file_path(filepath);
                                     ecgDataModel.setHr((int) analysis[1][0] +"");
@@ -883,7 +978,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                                     ecgDataModel.setDevice_info(jDeviceInfo.toString());
                                     ecgDataModel.setLatitude(""+PathUtil.userLatitude);
                                     ecgDataModel.setLongitude(""+PathUtil.userLongitude);
-                                    ecgDataModel.setPatient_info(jDeviceInfo.toString());
+                                    ecgDataModel.setPatient_info(jPatientInfo.toString());
                                     ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
                                     ecgDataModel.setPdf_file_path(filepath);
                                     ecgDataModel.setHr((int) analysis[1][0] +"");
@@ -1207,11 +1302,11 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
 //                                    startActivity(intent);
 //                                    finish();
 
-                                    Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
-                                    intent.putExtra("PDFPath", result.getJSONObject("success_data").getString("document_path")/*.replaceAll("", "%20")*/);
-                                    intent.putExtra("FileName", result.getJSONObject("success_data").getString("pdf"));
-                                    startActivity(intent);
-                                    finish();
+//                                    Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+//                                    intent.putExtra("PDFPath", result.getJSONObject("success_data").getString("document_path")/*.replaceAll("", "%20")*/);
+//                                    intent.putExtra("FileName", result.getJSONObject("success_data").getString("pdf"));
+//                                    startActivity(intent);
+//                                    finish();
                                 } else {
                                     pd.dismiss();
                                     //Toast.makeText(NewEcgActivity.this, result.getString("error_data").toString(), Toast.LENGTH_SHORT).show();
