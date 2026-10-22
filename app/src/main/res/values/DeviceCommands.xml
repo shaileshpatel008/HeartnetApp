@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--    Device Commands -->
-    <integer name="CMD_START">0x41</integer> /* To start acquisition of data */
-    <integer name="CMD_STOP">0x53</integer> /* To stop acquisition of data */
-    <integer name="CMD_TEST_START">0x54</integer> /* To stop acquisition of data */
+    <integer name="CMD_START">0x4C</integer> /* To start acquisition of data 0x41 */
+    <integer name="CMD_STOP">0x57</integer> /* To stop acquisition of data 0x53 */
+    <integer name="CMD_TEST_START">0x5A</integer> /* To stop acquisition of data 0x54 */
     <integer name="CMD_ACK">0x79</integer> /* Acknowledgement to be sent to device after every successful response */
     <integer name="CMD_ERR">0x78</integer> /* Error to be sent to device on receiving a bad response */
+
+    <!--<integer name="CMD_START">0x41</integer> /* To start acquisition of data */
+    <integer name="CMD_STOP">0x53</integer> /* To stop acquisition of data */
+    <integer name="CMD_TEST_START">0x54</integer> /* To stop acquisition of data */-->
 
     <integer name="CMD_GAIN_1">0x42</integer>
     <integer name="CMD_GAIN_2">0x43</integer>

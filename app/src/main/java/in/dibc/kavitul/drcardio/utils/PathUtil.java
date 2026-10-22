@@ -10,6 +10,8 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 /**
@@ -18,12 +20,20 @@ import java.net.URISyntaxException;
 
 public class PathUtil {
 
-    public static String FolderName = "DrCardioDocuments18";
+    public static String FolderName = "HeartnetDocuments18";
 
     public static double userLatitude = 0.0, userLongitude = 0.0;
     public static String userAddress = "";
 
     public static boolean INTERNET_STATUS = false;
+
+    public static boolean IS_FIRST_TIME = true;
+
+//    public static String API_URL = "https://dev2.heartnetnetindiademo.in/";
+    public static String API_URL = "https://heartnetindia.in/";
+//    public static String API_URL = "https://live1.heartnetindia.in/";
+
+    public static String TOKEN = "";
 
     public static int[] reviewsContainsCount = new int[]{5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,
             105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,
@@ -109,5 +119,16 @@ public class PathUtil {
      */
     public static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    public static File createTempFile(Context context) {
+        File tmpFile = null;
+        try {
+            // Create a temporary file in the app's cache directory
+            tmpFile = File.createTempFile("ecg_temp", ".tmp", context.getCacheDir());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return tmpFile;
     }
 }

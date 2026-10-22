@@ -19,8 +19,12 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
 
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
 
     <application
         android:name=".SupportClass.App"
@@ -29,19 +33,45 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
-        android:usesCleartextTraffic="true"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:theme"
+        android:usesCleartextTraffic="true"
         tools:ignore="LockedOrientationActivity"
+        tools:replace="android:theme"
         tools:targetApi="q">
+        <activity
+            android:name=".CrashShareActivity"
+            android:exported="false"
+            android:process=":crashshare"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Material.Light.Dialog.NoActionBar" />
+        <activity
+            android:name=".FullScreenImageActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ScanListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PatientRegisterActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".PDFViewerActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
             android:name=".walkthroughscreen.IntroductionActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PatientValidateActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PatientHistoryActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity

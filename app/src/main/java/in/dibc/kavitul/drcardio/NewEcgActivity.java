@@ -15,10 +15,12 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -36,7 +38,6 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import com.github.mikephil.charting.charts.LineChart;
@@ -48,6 +49,8 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,6 +70,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import in.dibc.kavitul.drcardio.Model.PatientDetails;
+import in.dibc.kavitul.drcardio.SupportClass.ECGFileGenerator;
+import in.dibc.kavitul.drcardio.SupportClass.ECGReportGenerator;
+import in.dibc.kavitul.drcardio.apis.RetrofitClient;
+import in.dibc.kavitul.drcardio.apis.request.AuthRequest;
+import in.dibc.kavitul.drcardio.apis.request.DownloadRequest;
+import in.dibc.kavitul.drcardio.apis.response.DownloadResponse;
+import in.dibc.kavitul.drcardio.apis.response.DownloadResponseData;
+import in.dibc.kavitul.drcardio.apis.response.GetScanResponseModel;
+import in.dibc.kavitul.drcardio.apis.response.UploadResponse;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import in.dibc.kavitul.bluetoothmodule.BluetoothPermissions;
 import in.dibc.kavitul.drcardio.Model.ECGDataModel;
 import in.dibc.kavitul.drcardio.Model.ecgData;
@@ -77,6 +97,8 @@ import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.ecgFilter;
 import in.dibc.kavitul.drcardio.SupportClass.mFile;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.apis.ApiService;
+import in.dibc.kavitul.drcardio.apis.response.PatientDetailsResponse;
 import in.dibc.kavitul.drcardio.utils.GPSTracker;
 import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
@@ -112,8 +134,9 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
     private LinearLayout ll_loading;
     // TODO: 2/2/21 try to use threadpool or thread factory for multithreading
 
-    String upload_URL = "https://cloudecg.drcardio.in/api/upload-pdf"; // https://drcadio.soluspottechnolabs.com/api/upload-pdf"; //https://rainbowline.soluspottechnolabs.com/api/uploadCardioPdf";
-    RequestQueue rQueue;
+    private ApiService apiService;
+    String PatientID = "";
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -124,11 +147,21 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         setUiHandler();
         setDataHandlerThread();
         ecgData.resetEcgData();
-        checkFromLoadData();
+//        checkFromLoadData();
         ecgFilter.setFilter(settings.filter);
         if (settings.test_mode.equals("true")) {
             showTestModePopup();
         }
+
+//        callDownloadReportsAPI("0000000999-11-04-2025-10-13-00");
+
+//        String PatientID = "";
+//        if(getIntent() != null) {
+//            PatientID = getIntent().getStringExtra("PatientID");
+//            Log.v("", "Patient ID :::: "+PatientID);
+//            apiService = RetrofitClient.getApiService();
+//            getPatientDetails(PatientID);
+//        }
 
         // check if GPS enabled
         GPSTracker gpsTracker = new GPSTracker(this);
@@ -248,7 +281,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void showDisclaimerMessage() {
-        Toast.makeText(getApplicationContext(), R.string.graph_display_disclaimer, Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), R.string.graph_display_disclaimer, Toast.LENGTH_LONG).show();
     }
 
     public void setDataHandlerThread() {
@@ -259,17 +292,17 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(NewEcgActivity.this);
         alertDialog.setTitle("Select which graphs to display");
         alertDialog.setMultiChoiceItems(ecgData.lead_name, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                checkedItems[which]=isChecked;
-            }
-        })
-        .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                showHideGraphs();
-            }
-        })
-        .setNegativeButton(android.R.string.no, null);
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        checkedItems[which]=isChecked;
+                    }
+                })
+                .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        showHideGraphs();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null);
         AlertDialog alert = alertDialog.create();
         alert.setCanceledOnTouchOutside(false);
         alert.show();
@@ -530,11 +563,11 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(NewEcgActivity.this);
             alertDialog.setTitle("Are you sure you want to stop reading and return to main screen?");
             alertDialog.setPositiveButton(in.dibc.kavitul.bluetoothmodule.R.string.yes, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    stopReading();
-                    finish();
-                }
-            })
+                        public void onClick(DialogInterface dialog, int id) {
+                            stopReading();
+                            finish();
+                        }
+                    })
                     .setNegativeButton(android.R.string.no, null);
             AlertDialog alert = alertDialog.create();
             alert.setCanceledOnTouchOutside(false);
@@ -593,7 +626,14 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            generateReport();
+//                            generateReport();
+//                            String PatientID = "";
+                            if(getIntent() != null) {
+                                PatientID = getIntent().getStringExtra("PatientID");
+//                                Log.v("", "Patient ID :::: "+PatientID);
+                                apiService = RetrofitClient.getApiService();
+                                getPatientDetails(PatientID);
+                            }
                         }
                     }, 500);
                 } else {
@@ -656,14 +696,48 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         }
         sendCommand(appbt.btHelper.CMD_STOP);
         ecgData.isReading = false;
+//        Log.v("ecgData.sample_data :: ", "ecgData.sample_data :: "+ecgData.sample_data[0].length);
+//        Log.v("ecgData.raw_data :: ", "ecgData.raw_data :: "+ecgData.raw_data.length);
+//        Log.v("ecgData.dc_corrected_data :: ", "ecgData.dc_corrected_data :: "+ecgData.dc_corrected_data.length);
+//        Log.v("ecgData.filtered_data :: ", "ecgData.filtered_data :: "+ecgData.filtered_data.length);
+//        String jsonData = convertDataDataToJson(ecgData.sample_data, "sample_data");
+//        Log.d("ECG_JSON sample_data", jsonData);
+//        String jsonData1 = convertDataDataToJson(ecgData.raw_data, "raw_data");
+//        Log.d("ECG_JSON raw_data", jsonData1);
+//        String jsonData2 = convertDataDataToJson(ecgData.dc_corrected_data, "dc_corrected_data");
+//        Log.d("ECG_JSON dc_corrected_data", jsonData2);
+//        String jsonData4 = convertDataDataToJson(ecgData.filtered_data, "filtered_data");
+//        Log.d("ECG_JSON filtered_data", jsonData4);
         if (min_saved_seconds <= ecgData.rawDataCount / ecgData.sampleRatePerSec) {
-                showGenerateReportButton(true);
-                showSeekBar();
-                Toast.makeText(getApplicationContext(), "Select clean data for Report", Toast.LENGTH_SHORT).show();
+            showGenerateReportButton(true);
+            showSeekBar();
+            Toast.makeText(getApplicationContext(), "Select clean data for Report", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getApplicationContext(), "Need to acquire for at least " + min_saved_seconds + " seconds!", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    public static String convertDataDataToJson(float[][] ecgData, String keyName) {
+        try {
+            JSONArray leadsArray = new JSONArray();
+
+            for (float[] lead : ecgData) {
+                JSONArray leadArray = new JSONArray();
+                for (float sample : lead) {
+                    leadArray.put(sample);
+                }
+                leadsArray.put(leadArray);
+            }
+
+            JSONObject json = new JSONObject();
+            json.put(keyName, leadsArray);
+
+            return json.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{}";
+        }
     }
 
     private void enableChartInteraction(int ch, boolean enable) {
@@ -734,6 +808,314 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    public void uploadECGFiles(String uploadFilePath) {
+        // Create .tmp file
+//        File tmpFile = PathUtil.createTempFile(this);
+//
+//        String tmpFilePath = "";
+//        if (tmpFile != null) {
+//            tmpFilePath = tmpFile.getAbsolutePath();
+//            Log.d("FilePath", "TMP File Path: " + tmpFilePath);
+//        } else {
+//            Log.e("FilePath", "Failed to create TMP file");
+//        }
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Uploading...");
+        progressDialog.setCancelable(false); // Prevents dismissal on touch outside
+        progressDialog.show();
+
+        // Initialize Retrofit
+        ApiService apiService = RetrofitClient.getApiService();
+
+        // File paths (replace with actual file paths)
+        File ecgFile = new File(/*"/storage/emulated/0/Download/sample.ecg"*/uploadFilePath);
+        File tmpFile = new File(/*"/storage/emulated/0/Download/sample.ecg"*/uploadFilePath.replaceAll(".ecg", ".tmp"));
+//        File tmpFileNew = new File(tmpFilePath);
+
+        if (!ecgFile.exists()) Log.e("UPLOAD_ERROR", "ECG file not found!");
+        if (!tmpFile.exists()) Log.e("UPLOAD_ERROR", "TMP file not found!");
+
+        // Convert Files to RequestBody
+        RequestBody requestFile1 = RequestBody.create(MediaType.parse("application/octet-stream"), ecgFile);
+        RequestBody requestFile2 = RequestBody.create(MediaType.parse("application/octet-stream"), tmpFile);
+
+        // Wrap into MultipartBody.Part
+        MultipartBody.Part body1 = MultipartBody.Part.createFormData("files", ecgFile.getName(), requestFile1);
+        MultipartBody.Part body2 = MultipartBody.Part.createFormData("files", tmpFile.getName(), requestFile2);
+
+        // Add both parts to a list
+        List<MultipartBody.Part> fileParts = new ArrayList<>();
+        fileParts.add(body1);
+        fileParts.add(body2);
+
+        // Log Request Data
+        Log.d("UploadAPI", "Uploading Files ECG : " + ecgFile.getName() + ", " + ecgFile.getName());
+        Log.d("UploadAPI", "Uploading Files TMP : " + ecgFile.getName() + ", " + tmpFile.getName());
+        Log.v("Token ::", "Token ::"+PathUtil.TOKEN);
+
+        // Make API Call
+        Call<UploadResponse> call = apiService.uploadECGFiles(PathUtil.TOKEN,/*body1, body2*/fileParts);
+        call.enqueue(new Callback<UploadResponse>() {
+            @Override
+            public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
+                progressDialog.dismiss();
+
+                if (response.code() == 401) {
+                    handleTokenExpired();
+                    return;
+                }
+
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("UploadAPI", "Success: " + response.body().toString());
+//                    callDownloadReportsAPI(extractScanID(ecgFile.getName()));
+//                    Toast.makeText(NewEcgActivity.this, "Report uploaded successfully", Toast.LENGTH_LONG);
+                    showAndRedirect("Report uploaded successfully!", 3000);
+                } else {
+                    // Log error response body
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Log.e("UploadAPI", "Failed: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e("UploadAPI", "Error parsing errorBody");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UploadResponse> call, Throwable t) {
+                progressDialog.dismiss();
+                Log.e("UploadAPI", "API Call Failed: " + t.getMessage());
+
+                ArrayList<String> listECGDataModel = new ArrayList<>();
+                if(PrefHelper.getECGDataListResponse("ECGDataList") != null) {
+                    listECGDataModel = PrefHelper.getECGDataListResponse("ECGDataList");
+                    listECGDataModel.add(uploadFilePath);
+                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
+                } else {
+                    listECGDataModel.add(uploadFilePath);
+                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
+                }
+            }
+        });
+    }
+
+    public void showAndRedirect(String message, int duration) {
+        // Create a TextView for the message
+        TextView textView = new TextView(NewEcgActivity.this);
+        textView.setText(message);
+        textView.setTextSize(18);
+        textView.setTextColor(Color.BLACK);
+        textView.setGravity(Gravity.CENTER);
+        textView.setPadding(40, 40, 40, 40);
+
+        // Create the AlertDialog
+        AlertDialog dialog = new AlertDialog.Builder(NewEcgActivity.this)
+                .setView(textView) // Set the TextView as the dialog view
+                .setCancelable(false) // Prevent manual dismissal
+                .create();
+
+        // Show the dialog
+        dialog.show();
+
+        // Auto dismiss after the given duration and redirect
+        new Handler().postDelayed(() -> {
+            dialog.dismiss(); // Dismiss dialog
+            finish();
+        }, duration);
+    }
+
+    public String extractScanID(String filename) {
+        if (filename.contains("_")) {
+            return filename.substring(0, filename.indexOf("_"));
+        }
+        return filename; // If no underscore is found, return original filename
+    }
+
+
+    private void callDownloadReportsAPI(String ScanID) {
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Downloading report...");
+        progressDialog.setCancelable(false); // Prevents dismissal on touch outside
+        progressDialog.show();
+
+        ApiService apiService = RetrofitClient.getApiService();
+
+        Log.v("Token ::", "Token ::"+PathUtil.TOKEN);
+
+//        DownloadRequest downloadRequest = new DownloadRequest(ScanID);
+
+        Call<DownloadResponse> call = apiService.downloadReport(PathUtil.TOKEN, ScanID);
+        call.enqueue(new Callback<DownloadResponse>() {
+            @Override
+            public void onResponse(Call<DownloadResponse> call, Response<DownloadResponse> response) {
+                progressDialog.dismiss();
+                if (response.code() == 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("GET_SUCCESS", "Response: " + response.body().getResponse());
+
+                    //Log.d(TAG, "Raw Response String: " + patientResponse.getResponse());
+
+                    // Convert String to JSON Array
+                    try {
+                        JSONArray jsonArray = new JSONArray(response.body().getResponse());
+                        if(jsonArray.length() > 0) {
+                            String reportAnalysis = jsonArray.getJSONObject(0).getString("ReportDetails");
+                            Log.v("ReportDetails :: ", "ReportDetails :: "+reportAnalysis);
+                            String UniqueStudyId = jsonArray.getJSONObject(0).getString("UniqueStudyId");
+                            Log.v("UniqueStudyId :: ", "UniqueStudyId :: "+UniqueStudyId);
+                            String cardiologistName = jsonArray.getJSONObject(0).getString("Cardiologist");
+                            Log.v("CardiologistName :: ", "CardiologistName :: "+cardiologistName);
+                            String cardiologistSignatureURL = jsonArray.getJSONObject(0).getString("CardiologistSignatureURL");
+                            Log.v("CardiologistSignatureURL :: ", "CardiologistSignatureURL :: "+cardiologistSignatureURL);
+                            callGetReportsDetailsAPI(UniqueStudyId, reportAnalysis, cardiologistName, cardiologistSignatureURL);
+                        }
+                    } catch (Exception e) {
+                        progressDialog.dismiss();
+                        Log.e(TAG, "JSON Parsing Error: " + e.getMessage());
+                    }
+                } else {
+                    Log.e("GET_ERROR", "Error: " + response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DownloadResponse> call, Throwable t) {
+                progressDialog.dismiss();
+                Log.e("GET_FAILURE", "Failed: " + t.getMessage());
+            }
+        });
+    }
+
+    private void callGetReportsDetailsAPI(String studyUniqueId, String reportAnalysis, String cardiologistName, String cardiologistSignatureURL) {
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Fetching report details...");
+        progressDialog.setCancelable(false); // Prevents dismissal on touch outside
+        progressDialog.show();
+
+        ApiService apiService = RetrofitClient.getApiService();
+
+        Log.v("Token ::", "Token ::"+PathUtil.TOKEN);
+
+//        DownloadRequest downloadRequest = new DownloadRequest(ScanID);
+
+        Call<GetScanResponseModel> call = apiService.getReportDetails(PathUtil.TOKEN, studyUniqueId);
+        call.enqueue(new Callback<GetScanResponseModel>() {
+            @Override
+            public void onResponse(Call<GetScanResponseModel> call, Response<GetScanResponseModel> response) {
+                progressDialog.dismiss();
+                if (response.isSuccessful() && response.body() != null) {
+
+                    Log.d(
+                            "GET_SUCCESS",
+                            "Response: " + response.body().getResponse()
+                    );
+
+                    try {
+
+                        DownloadResponseData responseData =
+                                response.body().getResponse();
+
+                        if (responseData != null) {
+
+                            String reportImageURL =
+                                    responseData.getImageUrl();
+
+                            Log.v(
+                                    "ReportImageURL GIF :: ",
+                                    "ReportImageURL GIF :: " + reportImageURL
+                            );
+
+                            if (reportImageURL != null &&
+                                    !reportImageURL.isEmpty()) {
+
+                                new ECGReportGenerator.ECGReportGeneratorTask(
+                                        NewEcgActivity.this,
+                                        reportImageURL,
+                                        reportAnalysis,
+                                        "",
+                                        cardiologistName,
+                                        cardiologistSignatureURL
+                                ).execute();
+
+                            } else {
+
+                                progressDialog.dismiss();
+
+                                Log.e(
+                                        "API_ERROR",
+                                        "ImageUrl is empty or null"
+                                );
+                            }
+
+                        } else {
+
+                            progressDialog.dismiss();
+
+                            Log.e(
+                                    "API_ERROR",
+                                    "Response object is null"
+                            );
+                        }
+
+                    } catch (Exception e) {
+
+                        progressDialog.dismiss();
+
+                        Log.e(
+                                "API_ERROR",
+                                "Error: " + e.getMessage(),
+                                e
+                        );
+                    }
+
+                } else {
+
+                    progressDialog.dismiss();
+
+                    Log.e(
+                            "GET_ERROR",
+                            "Error: " + response.errorBody()
+                    );
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GetScanResponseModel> call, Throwable t) {
+                progressDialog.dismiss();
+                Log.e("GET_FAILURE", "Failed: " + t.getMessage());
+            }
+        });
+    }
+
+    // ✅ Common Method
+    private void handleTokenExpired() {
+
+        Toast.makeText(NewEcgActivity.this,
+                "Session expired. Please login again.",
+                Toast.LENGTH_LONG).show();
+
+        // Clear Session
+        PrefHelper.setBoolean("isUserLoggedIn", false);
+        PrefHelper.setString("AppToken", "");
+        PathUtil.TOKEN = "";
+
+        // Redirect Login
+        Intent intent =
+                new Intent(NewEcgActivity.this, SignInActivity.class);
+
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        startActivity(intent);
+
+        finish();
+    }
+
     private void generateReport() {
         final Boolean[] isGenerated = {false};
         int pos = report_x_position;
@@ -783,226 +1165,46 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
 
                     ll_loading.setVisibility(View.GONE);
                     if (isGenerated[0]) {
-//                        displayAlertToView();
+                        float[][] analysis = ecgAnalysis.analysisArray;
+                        DecimalFormat df = new DecimalFormat();
+                        df.setMaximumFractionDigits(2);
 
-                        FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(NewEcgActivity.this);
-                        Bundle params2 = new Bundle();
-                        params2.putString(FirebaseAnalytics.Param.VALUE, "Report Generated from : "+ecgData.patinet_deviceid+" Device");
-                        mFirebaseAnalytics.logEvent("ECG_Report_Generated", params2);
+                        int rr = 0;
+                        if((int) analysis[1][0] > 0){
+                            rr = Math.round((60000 / analysis[1][0]));
+                        }
 
-//                        String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
-//                        String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
-//                        File file = new File(filepath);//here schedule1.pdf is the pdf file name which is keep in assets folder.
-//
-//                        //String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
-//                        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
-//                        intent.putExtra("PDFPath", filepath);
-//                        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
-//                        startActivity(intent);
-//                        finish();
+//                        short[][] raw_data_from_file = new short[sampleCount][ecgData.NO_OF_CHANNELS];
 
-                        // File UPLOAD
-                        String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
-                        String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
-                        File file = new File(filepath);
-                        Log.v("Upload PDF File Name : ", appendFileName + "_" + ecgData.date_time + ".pdf");
-                        Log.v("Upload Path :: ", filepath);
-
-                        if(PathUtil.INTERNET_STATUS) {
-                            //uploadPDF(appendFileName + "_" + ecgData.date_time + ".pdf", Uri.fromFile(file), ecgAnalysis.analysisArray);
-
-                            try {
-                                JSONObject jDeviceInfo = new JSONObject();
-                                try {
-//                        jDeviceInfo.put("OS", System.getProperty("os.version"));
-                                    jDeviceInfo.put("API Level", android.os.Build.VERSION.SDK_INT);
-                                    jDeviceInfo.put("Device", android.os.Build.DEVICE);
-                                    jDeviceInfo.put("Model", android.os.Build.MODEL );
-                                    jDeviceInfo.put("FullDeviceInfo", Build.BRAND+" "+android.os.Build.MODEL);
-                                    Log.v("Device Informations :: ", jDeviceInfo.toString());
-                                } catch (JSONException e) {
-                                    throw new RuntimeException(e);
-                                }
-
-                                JSONObject jPatientInfo = new JSONObject();
-                                try {
-                                    jPatientInfo.put("Id", ecgData.patient_id);
-                                    jPatientInfo.put("Name", ecgData.patient_name);
-                                    jPatientInfo.put("Age", ecgData.patient_age);
-                                    jPatientInfo.put("Comments", ecgData.patient_comments);
-                                    jPatientInfo.put("Gender", ecgData.patient_sex);
-                                    jPatientInfo.put("DeviceID", ecgData.patinet_deviceid);
-                                    Log.v("Patient Informations :: ", jPatientInfo.toString());
-                                } catch (JSONException e) {
-                                    throw new RuntimeException(e);
-                                }
-//                                Map<String, String> params = new HashMap<>();
-//                                params.put("device_id", ecgData.patinet_deviceid);
-//                                params.put("latitude", ""+PathUtil.userLatitude);
-//                                params.put("longitude", ""+PathUtil.userLongitude);
-//                                params.put("device_info", jDeviceInfo.toString());
-//                                params.put("patient_info", jDeviceInfo.toString());
-//                                params.put("address", ""+PathUtil.userAddress);
-
-                                float[][] analysis = ecgAnalysis.analysisArray;
-                                DecimalFormat df = new DecimalFormat();
-                                df.setMaximumFractionDigits(2);
-
-                                int rr = 0;
-                                if((int) analysis[1][0] > 0){
-                                    rr = Math.round((60000 / analysis[1][0]));
-                                }
-
-                                ArrayList<ECGDataModel> listECGDataModel = new ArrayList<>();
-                                if(PrefHelper.getECGDataListResponse("ECGDataList") != null) {
-                                    listECGDataModel = PrefHelper.getECGDataListResponse("ECGDataList");
-                                    ECGDataModel ecgDataModel = new ECGDataModel();
-                                    ecgDataModel.setAddress(""+PathUtil.userAddress);
-                                    ecgDataModel.setDevice_id(ecgData.patinet_deviceid);
-                                    ecgDataModel.setDevice_info(jDeviceInfo.toString());
-                                    ecgDataModel.setLatitude(""+PathUtil.userLatitude);
-                                    ecgDataModel.setLongitude(""+PathUtil.userLongitude);
-                                    ecgDataModel.setPatient_info(jPatientInfo.toString());
-                                    ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
-                                    ecgDataModel.setPdf_file_path(filepath);
-                                    ecgDataModel.setHr((int) analysis[1][0] +"");
-                                    ecgDataModel.setR(df.format(analysis[1][1]) +"");
-                                    ecgDataModel.setRr(rr +"");
-                                    ecgDataModel.setPr(Math.round(analysis[1][7]*1000) +"");
-                                    ecgDataModel.setQrs(Math.round(analysis[1][6]*1000) +"");
-                                    ecgDataModel.setQt(Math.round(analysis[1][6]*1000) +"");
-                                    ecgDataModel.setQtc(Math.round((analysis[1][8]/analysis[1][11])*1000) +"");
-                                    ecgDataModel.setQt_by_qtc(df.format(analysis[1][11])+"");
-                                    listECGDataModel.add(ecgDataModel);
-                                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
-                                } else {
-                                    ECGDataModel ecgDataModel = new ECGDataModel();
-                                    ecgDataModel.setAddress(""+PathUtil.userAddress);
-                                    ecgDataModel.setDevice_id(ecgData.patinet_deviceid);
-                                    ecgDataModel.setDevice_info(jDeviceInfo.toString());
-                                    ecgDataModel.setLatitude(""+PathUtil.userLatitude);
-                                    ecgDataModel.setLongitude(""+PathUtil.userLongitude);
-                                    ecgDataModel.setPatient_info(jPatientInfo.toString());
-                                    ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
-                                    ecgDataModel.setPdf_file_path(filepath);
-                                    ecgDataModel.setHr((int) analysis[1][0] +"");
-                                    ecgDataModel.setR(df.format(analysis[1][1]) +"");
-                                    ecgDataModel.setRr(rr +"");
-                                    ecgDataModel.setPr(Math.round(analysis[1][7]*1000) +"");
-                                    ecgDataModel.setQrs(Math.round(analysis[1][6]*1000) +"");
-                                    ecgDataModel.setQt(Math.round(analysis[1][6]*1000) +"");
-                                    ecgDataModel.setQtc(Math.round((analysis[1][8]/analysis[1][11])*1000) +"");
-                                    ecgDataModel.setQt_by_qtc(df.format(analysis[1][11])+"");
-                                    listECGDataModel.add(ecgDataModel);
-                                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
-                                }
-
-                                openGeneratedPDF();
-
-//                                Intent intent = new Intent(NewEcgActivity.this, MainActivity.class);
-//                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-//                                startActivity(intent);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-
-                            try {
-                                JSONObject jDeviceInfo = new JSONObject();
-                                try {
-//                        jDeviceInfo.put("OS", System.getProperty("os.version"));
-                                    jDeviceInfo.put("API Level", android.os.Build.VERSION.SDK_INT);
-                                    jDeviceInfo.put("Device", android.os.Build.DEVICE);
-                                    jDeviceInfo.put("Model", android.os.Build.MODEL );
-                                    jDeviceInfo.put("FullDeviceInfo", Build.BRAND+" "+android.os.Build.MODEL);
-                                    Log.v("Device Informations :: ", jDeviceInfo.toString());
-                                } catch (JSONException e) {
-                                    throw new RuntimeException(e);
-                                }
-
-                                JSONObject jPatientInfo = new JSONObject();
-                                try {
-                                    jPatientInfo.put("Id", ecgData.patient_id);
-                                    jPatientInfo.put("Name", ecgData.patient_name);
-                                    jPatientInfo.put("Age", ecgData.patient_age);
-                                    jPatientInfo.put("Comments", ecgData.patient_comments);
-                                    jPatientInfo.put("Gender", ecgData.patient_sex);
-                                    jPatientInfo.put("DeviceID", ecgData.patinet_deviceid);
-                                    Log.v("Patient Informations :: ", jPatientInfo.toString());
-                                } catch (JSONException e) {
-                                    throw new RuntimeException(e);
-                                }
-//                                Map<String, String> params = new HashMap<>();
-//                                params.put("device_id", ecgData.patinet_deviceid);
-//                                params.put("latitude", ""+PathUtil.userLatitude);
-//                                params.put("longitude", ""+PathUtil.userLongitude);
-//                                params.put("device_info", jDeviceInfo.toString());
-//                                params.put("patient_info", jDeviceInfo.toString());
-//                                params.put("address", ""+PathUtil.userAddress);
-
-                                float[][] analysis = ecgAnalysis.analysisArray;
-                                DecimalFormat df = new DecimalFormat();
-                                df.setMaximumFractionDigits(2);
-
-                                int rr = 0;
-                                if((int) analysis[1][0] > 0){
-                                    rr = Math.round((60000 / analysis[1][0]));
-                                }
-
-                                ArrayList<ECGDataModel> listECGDataModel = new ArrayList<>();
-                                if(PrefHelper.getECGDataListResponse("ECGDataList") != null) {
-                                    listECGDataModel = PrefHelper.getECGDataListResponse("ECGDataList");
-                                    ECGDataModel ecgDataModel = new ECGDataModel();
-                                    ecgDataModel.setAddress(""+PathUtil.userAddress);
-                                    ecgDataModel.setDevice_id(ecgData.patinet_deviceid);
-                                    ecgDataModel.setDevice_info(jDeviceInfo.toString());
-                                    ecgDataModel.setLatitude(""+PathUtil.userLatitude);
-                                    ecgDataModel.setLongitude(""+PathUtil.userLongitude);
-                                    ecgDataModel.setPatient_info(jPatientInfo.toString());
-                                    ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
-                                    ecgDataModel.setPdf_file_path(filepath);
-                                    ecgDataModel.setHr((int) analysis[1][0] +"");
-                                    ecgDataModel.setR(df.format(analysis[1][1]) +"");
-                                    ecgDataModel.setRr(rr +"");
-                                    ecgDataModel.setPr(Math.round(analysis[1][7]*1000) +"");
-                                    ecgDataModel.setQrs(Math.round(analysis[1][6]*1000) +"");
-                                    ecgDataModel.setQt(Math.round(analysis[1][6]*1000) +"");
-                                    ecgDataModel.setQtc(Math.round((analysis[1][8]/analysis[1][11])*1000) +"");
-                                    ecgDataModel.setQt_by_qtc(df.format(analysis[1][11])+"");
-                                    listECGDataModel.add(ecgDataModel);
-                                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
-                                } else {
-                                    ECGDataModel ecgDataModel = new ECGDataModel();
-                                    ecgDataModel.setAddress(""+PathUtil.userAddress);
-                                    ecgDataModel.setDevice_id(ecgData.patinet_deviceid);
-                                    ecgDataModel.setDevice_info(jDeviceInfo.toString());
-                                    ecgDataModel.setLatitude(""+PathUtil.userLatitude);
-                                    ecgDataModel.setLongitude(""+PathUtil.userLongitude);
-                                    ecgDataModel.setPatient_info(jPatientInfo.toString());
-                                    ecgDataModel.setPdf_name(appendFileName + "_" + ecgData.date_time + ".pdf");
-                                    ecgDataModel.setPdf_file_path(filepath);
-                                    ecgDataModel.setHr((int) analysis[1][0] +"");
-                                    ecgDataModel.setR(df.format(analysis[1][1]) +"");
-                                    ecgDataModel.setRr(rr +"");
-                                    ecgDataModel.setPr(Math.round(analysis[1][7]*1000) +"");
-                                    ecgDataModel.setQrs(Math.round(analysis[1][6]*1000) +"");
-                                    ecgDataModel.setQt(Math.round(analysis[1][6]*1000) +"");
-                                    ecgDataModel.setQtc(Math.round((analysis[1][8]/analysis[1][11])*1000) +"");
-                                    ecgDataModel.setQt_by_qtc(df.format(analysis[1][11])+"");
-                                    listECGDataModel.add(ecgDataModel);
-                                    PrefHelper.setECGDataListResponse("ECGDataList", listECGDataModel);
-                                }
-
-
-                                openGeneratedPDF();
-
-//                                Intent intent = new Intent(NewEcgActivity.this, MainActivity.class);
-//                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-//                                startActivity(intent);
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                        for (int ch = 0; ch < ecgData.NO_OF_CHANNELS; ch++) {
+                            for(int x = 0; x<ecgData.rawDataCount; x++)//reads the ecg data and saves in the raw_data array
+                            {
+//                                ecgData.raw_data[x][ch] = rawData[x][ch];
+                                float currVal = ecgData.raw_data[x][ch] / Float.parseFloat(settings.actualGain);
+                                ecgData.dc_corrected_data[x][ch] = currVal - ecgData.dcShift[ch];
+                                ecgData.filtered_data[x][ch] = ecgFilter.filter(ch, x, ecgData.dc_corrected_data[x][ch]);
                             }
                         }
+
+//                        final int posF = pos;
+//                        printEcgData(convertFloatToShort(ecgData.sample_data));
+                        String uploadFilePath = ECGFileGenerator.generateECGFile(
+                                PrefHelper.getString("PhysicianName", ""),
+                                Integer.parseInt(PatientID),
+                                16,
+                                (int) analysis[1][0],
+                                Math.round(analysis[1][6]*1000),
+                                Math.round(analysis[1][7]*1000),
+                                Math.round(analysis[1][8]*1000),
+                                0,
+                                0,
+                                0,
+                                posF
+                        );
+
+                        Log.v("", "Upload ECG File Path :::: "+uploadFilePath);
+
+                        uploadECGFiles(uploadFilePath);
                     } else {
                         new AlertDialog.Builder(NewEcgActivity.this)
                                 .setTitle("Unable to generate report")
@@ -1019,7 +1221,6 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
             }, 1500);
         }
 
-
         new Thread(() -> mFile.saveDatFile()).run();
         new Thread(() -> {
             if(settings.csv) {
@@ -1027,6 +1228,36 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
             }
         }).run();
 
+    }
+
+    public short[][] convertFloatToShort(float[][] floatArray) {
+        int rows = floatArray.length;
+        int cols = floatArray[0].length; // Assuming all rows have the same length
+
+        short[][] shortArray = new short[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                shortArray[i][j] = (short) Math.round(floatArray[i][j]); // Convert float to short
+                if (shortArray[i][j] > 0) {
+                    shortArray[i][j] += 2048;
+                } else if (shortArray[i][j] < 0) {
+                    shortArray[i][j] -= 2048;
+                }
+            }
+        }
+
+        return shortArray;
+    }
+
+    public void printEcgData(short[][] ecgData) {
+        for (int i = 0; i < ecgData.length; i++) { // Loop through leads (12)
+            StringBuilder leadData = new StringBuilder("Lead " + (i + 1) + ": ");
+            for (int j = 0; j < Math.min(ecgData[i].length, 10); j++) { // Print first 10 samples
+                leadData.append(ecgData[i][j]).append(", ");
+            }
+            System.out.println(leadData.toString());
+        }
     }
 
 
@@ -1058,7 +1289,7 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         //#Bhavesh Change
         /*String fileName = appendFileName + "_" + ecgData.date_time + ".pdf";
         File pdfFile = new File(mFile.getDirFile(this,mFile.DIR_REPORT), fileName);*/
-        String mimeType = "application/pdf";
+        /*String mimeType = "application/pdf";
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -1068,18 +1299,89 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
             startActivity(Intent.createChooser(intent, "Open PDF report using.."));
         } catch (ActivityNotFoundException e) {
             Toast.makeText(getApplicationContext(), "Unable to open report. make sure your phone has a PDF viewer installed. Report file: "+ file, Toast.LENGTH_LONG).show();
-        }
+        }*/
 
-        //String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
-//        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
-//        intent.putExtra("PDFPath", filepath);
-//        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
-//        startActivity(intent);
+        String filePath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+
+        Intent intent8 = new Intent("callOfflineReports");    //action: "msg"
+        intent8.setPackage(getPackageName());
+        getApplicationContext().sendBroadcast(intent8);
+
+
+        Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+        intent.putExtra("PDFPath", filepath);
+        intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
+        startActivity(intent);
+        finish();
     }
 
     public void openPatientForm(){
-        Intent intent = new Intent(NewEcgActivity.this, PatientData.class);
-        startActivityForResult(intent, PATIENT_FORM_REQUEST_CODE);
+//        Intent intent = new Intent(NewEcgActivity.this, PatientData.class);
+//        startActivityForResult(intent, PATIENT_FORM_REQUEST_CODE);
+
+//        String PatientID = "";
+        if(getIntent() != null) {
+            PatientID = getIntent().getStringExtra("PatientID");
+//            Log.v("", "Patient ID :::: "+PatientID);
+            apiService = RetrofitClient.getApiService();
+            getPatientDetails(PatientID);
+        }
+
+
+    }
+
+    private void getPatientDetails(String patientId) {
+        Call<PatientDetailsResponse> call = apiService.getPatientDetails(patientId);
+
+        call.enqueue(new Callback<PatientDetailsResponse>() {
+            @Override
+            public void onResponse(Call<PatientDetailsResponse> call, Response<PatientDetailsResponse> response) {
+
+                if (response.code() == 401) {
+                    handleTokenExpired();
+                    return;
+                }
+
+                if (response.isSuccessful() && response.body() != null) {
+                    String jsonString = response.body().getResponse(); // Get response string
+//                    Log.d(TAG, "Raw Response String: " + jsonString);
+
+                    // Convert JSON String to Object using Gson
+                    try {
+                        Gson gson = new Gson();
+                        PatientDetails patientDetails = gson.fromJson(jsonString, PatientDetails.class);
+
+//                        Log.d("Patient", "ID: " + patientDetails.getPatientId());
+                        Log.d("Patient", "Name: " + patientDetails.getFirstName() + " " + patientDetails.getLastName());
+                        Log.d("Patient", "DOB: " + patientDetails.getDateOfBirth());
+                        Log.d("Patient", "Mobile: " + patientDetails.getMobile1());
+                        Log.d("Patient", "Gender: " + patientDetails.getGender());
+
+//                        Toast.makeText(NewEcgActivity.this, "Patient: " + patientDetails.getFirstName(), Toast.LENGTH_LONG).show();
+
+//                        ecgData.patient_id = ""+patientDetails.getPatientId();
+                        ecgData.patient_name = patientDetails.getFirstName()+" "+patientDetails.getLastName();
+                        ecgData.patient_age = patientDetails.getDateOfBirth();
+                        ecgData.patient_comments = "";
+                        ecgData.patient_photo = "";
+                        ecgData.patient_sex = patientDetails.getGender();
+
+                        ll_loading.setVisibility(View.VISIBLE);
+                        new Handler().postDelayed(() -> generateReport(), 500);
+                    } catch (JsonSyntaxException e) {
+                        Log.e("API_ERROR", "JSON Parsing Error: " + e.getMessage());
+                    }
+                } else {
+                    Toast.makeText(NewEcgActivity.this, "Failed to get patient details!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PatientDetailsResponse> call, Throwable t) {
+                Log.e("API_ERROR", "API Call Failed", t);
+                Toast.makeText(NewEcgActivity.this, "API Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
@@ -1125,44 +1427,44 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-            Bundle bundle = msg.getData();
-            int status = bundle.getInt("status");
-            short[] channels;
-            switch (status){
-                case 0:
+                Bundle bundle = msg.getData();
+                int status = bundle.getInt("status");
+                short[] channels;
+                switch (status){
+                    case 0:
 
-                    break;
-                case 1:
-                    Log.d(TAG, "handleMessage: received 1");
+                        break;
+                    case 1:
+                        Log.d(TAG, "handleMessage: received 1");
 
-                    break;
-                case 2:
-                    Toast.makeText(getApplicationContext(), "File Version not compatible with the current version of the application", Toast.LENGTH_SHORT).show();
-                    break;
-                case 3:
-                    ll_loading.setVisibility(View.GONE);
-                    showDisclaimerMessage();
-                    for (int i = 0; i < ecgData.NO_OF_CHANNELS; i++) {
-                        modifyLineChartsUI(ecgData.chart[i]);
-                    }
-                    loopThroughFilteredData();
-                    break;
-                case 4: // Stop Reading
-                    sendCommand(appbt.btHelper.CMD_STOP);
-                    break;
-                case 9: // comm error - write failed.
-                    Toast.makeText(getApplicationContext(), "Error communicating to device", Toast.LENGTH_LONG).show();
-                    finish();
+                        break;
+                    case 2:
+                        Toast.makeText(getApplicationContext(), "File Version not compatible with the current version of the application", Toast.LENGTH_SHORT).show();
+                        break;
+                    case 3:
+                        ll_loading.setVisibility(View.GONE);
+                        showDisclaimerMessage();
+                        for (int i = 0; i < ecgData.NO_OF_CHANNELS; i++) {
+                            modifyLineChartsUI(ecgData.chart[i]);
+                        }
+                        loopThroughFilteredData();
+                        break;
+                    case 4: // Stop Reading
+                        sendCommand(appbt.btHelper.CMD_STOP);
+                        break;
+                    case 9: // comm error - write failed.
+                        Toast.makeText(getApplicationContext(), "Error communicating to device", Toast.LENGTH_LONG).show();
+                        finish();
 //                    appbt.btHelper.connectedThread.disconnect(); // SP 88888888
-                    break;
-                case 10:
-                    int s = bundle.getInt("sec");
-                    timer.setText("s");
-                    break;
-                default:
-                    break;
+                        break;
+                    case 10:
+                        int s = bundle.getInt("sec");
+                        timer.setText("s");
+                        break;
+                    default:
+                        break;
+                }
             }
-        }
 
 
         };
@@ -1263,205 +1565,205 @@ public class NewEcgActivity extends AppCompatActivity implements View.OnClickLis
         dataHandlerThread.quit();
     }
 
-    private void uploadPDF(final String pdfname, Uri pdffile, float[][] analysisArray){
-
-        ProgressDialog pd = new ProgressDialog(NewEcgActivity.this);
-        pd.setMessage("Please wait.. Syncing with cloud..");
-        pd.setCancelable(false);
-        pd.show();
-
-        InputStream iStream = null;
-        try {
-
-            iStream = getContentResolver().openInputStream(pdffile);
-            final byte[] inputData = getBytes(iStream);
-
-            VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, upload_URL,
-                    new Response.Listener<NetworkResponse>() {
-                        @Override
-                        public void onResponse(NetworkResponse response) {
-                            Log.d("ressssssoo",new String(response.data));
-                            String resultResponse = new String(response.data);
-                            rQueue.getCache().clear();
-                            try {
-                                JSONObject result = new JSONObject(resultResponse);
-                                String status = result.getString("status");
-//                                String message = result.getString("message");
-                                Log.v("Response :: ", result.toString());
-
-                                pd.dismiss();
-
-                                if (status.equals("success")) {
-
-//                                    String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
-//                                    String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+//    private void uploadPDF(final String pdfname, Uri pdffile, float[][] analysisArray){
 //
-//                                    Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
-//                                    intent.putExtra("PDFPath", filepath);
-//                                    intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
-//                                    startActivity(intent);
-//                                    finish();
-
-//                                    Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
-//                                    intent.putExtra("PDFPath", result.getJSONObject("success_data").getString("document_path")/*.replaceAll("", "%20")*/);
-//                                    intent.putExtra("FileName", result.getJSONObject("success_data").getString("pdf"));
-//                                    startActivity(intent);
-//                                    finish();
-                                } else {
-                                    pd.dismiss();
-                                    //Toast.makeText(NewEcgActivity.this, result.getString("error_data").toString(), Toast.LENGTH_SHORT).show();
-                                    new AlertDialog.Builder(NewEcgActivity.this)
-                                            .setIcon(android.R.drawable.ic_dialog_alert)
-                                            .setTitle("Upload error")
-                                            .setMessage(result.getString("error_data").toString())
-                                            .setPositiveButton("Ok", new DialogInterface.OnClickListener()
-                                            {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    dialog.dismiss();
-                                                }
-
-                                            })
-                                            //.setNegativeButton("No", null)
-                                            .show();
-                                }
-                            } catch (JSONException e) {
-                                pd.dismiss();
-                                e.printStackTrace();
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            //Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
-                            pd.dismiss();
-                            new AlertDialog.Builder(NewEcgActivity.this)
-                                    .setIcon(android.R.drawable.ic_dialog_alert)
-                                    .setTitle("Upload error")
-                                    .setMessage(error.getMessage())
-                                    .setPositiveButton("Ok", new DialogInterface.OnClickListener()
-                                    {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                        }
-
-                                    })
-                                    //.setNegativeButton("No", null)
-                                    .show();
-                        }
-                    }) {
-
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    String token = PrefHelper.getString("Token", "");
-                    Log.v("Token :: ", token.toString());
-                    Map<String, String> params = new HashMap<String, String>();
-//                    params.put("Content-Type", "multipart/form-data; charset=UTF-8");
-                    params.put("Authorization", "Bearer "+token);
-                    Log.v("Authorization :: ", params.toString());
-                    return params;
-                }
-
-                /*
-                 * If you want to add more parameters with the image
-                 * you can do it here
-                 * here we have only one parameter with the image
-                 * which is tags
-                 * */
-                @Override
-                protected Map<String, String> getParams() throws AuthFailureError {
-//                    System.getProperty("os.version"); // OS version
-//                    android.os.Build.VERSION.SDK      // API Level
-//                    android.os.Build.DEVICE           // Device
-//                    android.os.Build.MODEL            // Model
-//                    android.os.Build.PRODUCT          // Product
-
-                    JSONObject jDeviceInfo = new JSONObject();
-                    try {
-//                        jDeviceInfo.put("OS", System.getProperty("os.version"));
-                        jDeviceInfo.put("API Level", android.os.Build.VERSION.SDK_INT);
-                        jDeviceInfo.put("Device", android.os.Build.DEVICE);
-                        jDeviceInfo.put("Model", android.os.Build.MODEL );
-                        jDeviceInfo.put("FullDeviceInfo", Build.BRAND+" "+android.os.Build.MODEL);
-                        Log.v("Device Informations :: ", jDeviceInfo.toString());
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    JSONObject jPatientInfo = new JSONObject();
-                    try {
-//                        jDeviceInfo.put("OS", System.getProperty("os.version"));
-                        jPatientInfo.put("Id", ecgData.patient_id);
-                        jPatientInfo.put("Name", ecgData.patient_name);
-                        jPatientInfo.put("Age", ecgData.patient_age);
-                        jPatientInfo.put("Comments", ecgData.patient_comments);
-                        jPatientInfo.put("Gender", ecgData.patient_sex);
-                        jPatientInfo.put("DeviceID", ecgData.patinet_deviceid);
-//                        Log.v("Patient Informations :: ", jPatientInfo.toString());
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-                    float[][] analysis = analysisArray;
-                    DecimalFormat df = new DecimalFormat();
-                    df.setMaximumFractionDigits(2);
-
-                    int rr = 0;
-                    if((int) analysis[1][0] > 0){
-                        rr = Math.round((60000 / analysis[1][0]));
-                    }
-
-                    Map<String, String> params = new HashMap<>();
-                    params.put("device_id", ecgData.patinet_deviceid);
-                    params.put("latitude", ""+PathUtil.userLatitude);
-                    params.put("longitude", ""+PathUtil.userLongitude);
-                    params.put("device_info", jDeviceInfo.toString());
-                    params.put("patient_info", jPatientInfo.toString());
-                    params.put("address", ""+PathUtil.userAddress);
-                    params.put("hr", (int) analysis[1][0]+"");
-                    params.put("r", df.format(analysis[1][1])+"");
-                    params.put("rr", rr +"");
-                    params.put("pr", Math.round(analysis[1][7]*1000)+"");
-                    params.put("qrs", Math.round(analysis[1][6]*1000)+"");
-                    params.put("qt", Math.round(analysis[1][8]*1000)+"");
-                    params.put("qtc", Math.round((analysis[1][8]/analysis[1][11])*1000)+"");
-                    params.put("qt_by_qtc", df.format(analysis[1][11])+"");
-
-                    Log.v("Request :: ", params.toString());
-                    return params;
-                }
-
-                /*
-                 *pass files using below method
-                 * */
-                @Override
-                protected Map<String, DataPart> getByteData() {
-                    Map<String, DataPart> params = new HashMap<>();
-
-                    params.put("document_path", new DataPart(pdfname ,inputData));
-                    Log.v("Document Path :: ", pdfname);
-
-                    return params;
-                }
-            };
-
-
-            volleyMultipartRequest.setRetryPolicy(new DefaultRetryPolicy(
-                    400000,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-            rQueue = Volley.newRequestQueue(NewEcgActivity.this);
-            rQueue.add(volleyMultipartRequest);
-
-        } catch (FileNotFoundException e) {
-            pd.dismiss();
-            e.printStackTrace();
-        } catch (IOException e) {
-            pd.dismiss();
-            e.printStackTrace();
-        }
-    }
+//        ProgressDialog pd = new ProgressDialog(NewEcgActivity.this);
+//        pd.setMessage("Please wait.. Syncing with cloud..");
+//        pd.setCancelable(false);
+//        pd.show();
+//
+//        InputStream iStream = null;
+//        try {
+//
+//            iStream = getContentResolver().openInputStream(pdffile);
+//            final byte[] inputData = getBytes(iStream);
+//
+//            VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, upload_URL,
+//                    new Response.Listener<NetworkResponse>() {
+//                        @Override
+//                        public void onResponse(NetworkResponse response) {
+//                            Log.d("ressssssoo",new String(response.data));
+//                            String resultResponse = new String(response.data);
+//                            rQueue.getCache().clear();
+//                            try {
+//                                JSONObject result = new JSONObject(resultResponse);
+//                                String status = result.getString("status");
+////                                String message = result.getString("message");
+//                                Log.v("Response :: ", result.toString());
+//
+//                                pd.dismiss();
+//
+//                                if (status.equals("success")) {
+//
+////                                    String appendFileName = ecgData.patient_name.length() < 12 ? ecgData.patient_name : ecgData.patient_name.substring(0, 11);
+////                                    String filepath = appbt.storageBaseDir + "/" + appbt.storageSubDirs[appbt.STORAGE_SUB_DIR_REPORT] + "/" + appendFileName + "_" + ecgData.date_time + ".pdf";
+////
+////                                    Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+////                                    intent.putExtra("PDFPath", filepath);
+////                                    intent.putExtra("FileName", appendFileName + "_" + ecgData.date_time + ".pdf");
+////                                    startActivity(intent);
+////                                    finish();
+//
+////                                    Intent intent = new Intent(NewEcgActivity.this, PDFViewerActivity.class);
+////                                    intent.putExtra("PDFPath", result.getJSONObject("success_data").getString("document_path")/*.replaceAll("", "%20")*/);
+////                                    intent.putExtra("FileName", result.getJSONObject("success_data").getString("pdf"));
+////                                    startActivity(intent);
+////                                    finish();
+//                                } else {
+//                                    pd.dismiss();
+//                                    //Toast.makeText(NewEcgActivity.this, result.getString("error_data").toString(), Toast.LENGTH_SHORT).show();
+//                                    new AlertDialog.Builder(NewEcgActivity.this)
+//                                            .setIcon(android.R.drawable.ic_dialog_alert)
+//                                            .setTitle("Upload error")
+//                                            .setMessage(result.getString("error_data").toString())
+//                                            .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+//                                            {
+//                                                @Override
+//                                                public void onClick(DialogInterface dialog, int which) {
+//                                                    dialog.dismiss();
+//                                                }
+//
+//                                            })
+//                                            //.setNegativeButton("No", null)
+//                                            .show();
+//                                }
+//                            } catch (JSONException e) {
+//                                pd.dismiss();
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    },
+//                    new Response.ErrorListener() {
+//                        @Override
+//                        public void onErrorResponse(VolleyError error) {
+//                            //Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+//                            pd.dismiss();
+//                            new AlertDialog.Builder(NewEcgActivity.this)
+//                                    .setIcon(android.R.drawable.ic_dialog_alert)
+//                                    .setTitle("Upload error")
+//                                    .setMessage(error.getMessage())
+//                                    .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+//                                    {
+//                                        @Override
+//                                        public void onClick(DialogInterface dialog, int which) {
+//                                            dialog.dismiss();
+//                                        }
+//
+//                                    })
+//                                    //.setNegativeButton("No", null)
+//                                    .show();
+//                        }
+//                    }) {
+//
+//                @Override
+//                public Map<String, String> getHeaders() throws AuthFailureError {
+//                    String token = PrefHelper.getString("Token", "");
+//                    Log.v("Token :: ", token.toString());
+//                    Map<String, String> params = new HashMap<String, String>();
+////                    params.put("Content-Type", "multipart/form-data; charset=UTF-8");
+//                    params.put("Authorization", "Bearer "+token);
+//                    Log.v("Authorization :: ", params.toString());
+//                    return params;
+//                }
+//
+//                /*
+//                 * If you want to add more parameters with the image
+//                 * you can do it here
+//                 * here we have only one parameter with the image
+//                 * which is tags
+//                 * */
+//                @Override
+//                protected Map<String, String> getParams() throws AuthFailureError {
+////                    System.getProperty("os.version"); // OS version
+////                    android.os.Build.VERSION.SDK      // API Level
+////                    android.os.Build.DEVICE           // Device
+////                    android.os.Build.MODEL            // Model
+////                    android.os.Build.PRODUCT          // Product
+//
+//                    JSONObject jDeviceInfo = new JSONObject();
+//                    try {
+////                        jDeviceInfo.put("OS", System.getProperty("os.version"));
+//                        jDeviceInfo.put("API Level", android.os.Build.VERSION.SDK_INT);
+//                        jDeviceInfo.put("Device", android.os.Build.DEVICE);
+//                        jDeviceInfo.put("Model", android.os.Build.MODEL );
+//                        jDeviceInfo.put("FullDeviceInfo", Build.BRAND+" "+android.os.Build.MODEL);
+//                        Log.v("Device Informations :: ", jDeviceInfo.toString());
+//                    } catch (JSONException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//
+//                    JSONObject jPatientInfo = new JSONObject();
+//                    try {
+////                        jDeviceInfo.put("OS", System.getProperty("os.version"));
+//                        jPatientInfo.put("Id", ecgData.patient_id);
+//                        jPatientInfo.put("Name", ecgData.patient_name);
+//                        jPatientInfo.put("Age", ecgData.patient_age);
+//                        jPatientInfo.put("Comments", ecgData.patient_comments);
+//                        jPatientInfo.put("Gender", ecgData.patient_sex);
+//                        jPatientInfo.put("DeviceID", ecgData.patinet_deviceid);
+////                        Log.v("Patient Informations :: ", jPatientInfo.toString());
+//                    } catch (JSONException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    float[][] analysis = analysisArray;
+//                    DecimalFormat df = new DecimalFormat();
+//                    df.setMaximumFractionDigits(2);
+//
+//                    int rr = 0;
+//                    if((int) analysis[1][0] > 0){
+//                        rr = Math.round((60000 / analysis[1][0]));
+//                    }
+//
+//                    Map<String, String> params = new HashMap<>();
+//                    params.put("device_id", ecgData.patinet_deviceid);
+//                    params.put("latitude", ""+PathUtil.userLatitude);
+//                    params.put("longitude", ""+PathUtil.userLongitude);
+//                    params.put("device_info", jDeviceInfo.toString());
+//                    params.put("patient_info", jPatientInfo.toString());
+//                    params.put("address", ""+PathUtil.userAddress);
+//                    params.put("hr", (int) analysis[1][0]+"");
+//                    params.put("r", df.format(analysis[1][1])+"");
+//                    params.put("rr", rr +"");
+//                    params.put("pr", Math.round(analysis[1][7]*1000)+"");
+//                    params.put("qrs", Math.round(analysis[1][6]*1000)+"");
+//                    params.put("qt", Math.round(analysis[1][8]*1000)+"");
+//                    params.put("qtc", Math.round((analysis[1][8]/analysis[1][11])*1000)+"");
+//                    params.put("qt_by_qtc", df.format(analysis[1][11])+"");
+//
+//                    Log.v("Request :: ", params.toString());
+//                    return params;
+//                }
+//
+//                /*
+//                 *pass files using below method
+//                 * */
+//                @Override
+//                protected Map<String, DataPart> getByteData() {
+//                    Map<String, DataPart> params = new HashMap<>();
+//
+//                    params.put("document_path", new DataPart(pdfname ,inputData));
+//                    Log.v("Document Path :: ", pdfname);
+//
+//                    return params;
+//                }
+//            };
+//
+//
+//            volleyMultipartRequest.setRetryPolicy(new DefaultRetryPolicy(
+//                    400000,
+//                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+//                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+//            rQueue = Volley.newRequestQueue(NewEcgActivity.this);
+//            rQueue.add(volleyMultipartRequest);
+//
+//        } catch (FileNotFoundException e) {
+//            pd.dismiss();
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            pd.dismiss();
+//            e.printStackTrace();
+//        }
+//    }
 
     public byte[] getBytes(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();

@@ -9,13 +9,14 @@
 
     <color name="profile_default_tint">#e0e0e0</color>
 
-    <color name="colorPrimary">#c53827</color>
-    <color name="colorSecondary">#c53827</color>
-    <color name="colorAccent">#c53827</color>
-    <color name="colorPrimaryLight">#11c53827</color>
-    <color name="colorPrimaryLight1">#33c53827</color>
-    <color name="colorPrimaryLight2">#33c53827</color>
+    <color name="colorPrimary">#e11d2b</color>
+    <color name="colorSecondary">#e11d2b</color>
+    <color name="colorAccent">#e11d2b</color>
+    <color name="colorPrimaryLight">#11e11d2b</color>
+    <color name="colorPrimaryLight1">#33e11d2b</color>
+    <color name="colorPrimaryLight2">#33e11d2b</color>
     <color name="colorGray">#66e7e7e7</color>
+    <color name="colorPrimary2">#22a9e1</color>
 
 
 

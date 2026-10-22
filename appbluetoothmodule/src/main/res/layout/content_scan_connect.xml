@@ -27,6 +27,7 @@
         android:layout_height="wrap_content"
         android:padding="20dp"
         android:gravity="center"
+        android:orientation="vertical"
         android:layout_gravity="bottom">
         <TextView
             android:id="@+id/btn_deviceConnected1"
@@ -52,6 +53,7 @@
             android:layout_gravity="center_horizontal"
             android:text="Continue"
             android:textColor="@color/white"
+            android:visibility="gone"
             android:background="@drawable/btn_roundedrect_primary"
             android:textSize="20dp" />
 
@@ -63,6 +65,15 @@
             app:backgroundTint="@color/colorPrimary"
             app:srcCompat="@drawable/ic_autorenew_black_24dp"
             tools:ignore="VectorDrawableCompat" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Click to Refresh"
+            android:textColor="@android:color/black"
+            android:textSize="15dp"
+            android:textStyle="normal" />
 
     </LinearLayout>
 

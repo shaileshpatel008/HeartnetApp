@@ -81,7 +81,7 @@ public class PdfGenerator {
     int Y_Scale_mm_per_mv = 10;
     float y_PS_PT_per_mV = (PS_PT_per_mm * Y_Scale_mm_per_mv) / val_per_mv;
 
-    float calibration_signal_length_mm = 5f;
+    float calibration_signal_length_mm = 7f;
     private final int report_data_length = 6500;
     private final Baseline_remove1 baseLineRemove = new Baseline_remove1();
     int x_graphs = 4, y_graphs = 3;
@@ -383,13 +383,29 @@ public class PdfGenerator {
 
         int calibration_length = (int) (calibration_signal_length_mm * x_sample_per_mm);
 
+//        for(int i=0 ; i < calibration_length; i++){
+//            if(i < calibration_length/5 || i > calibration_length*4/5){
+//                y = base_axis;
+//            } else {
+//                y = base_axis - val_per_mv*y_PS_PT_per_mV*scale;
+////                y = base_axis - (val_per_mv * y_PS_PT_per_mV * scale * 5 / 3);
+//            }
+//            page.getCanvas().drawLine(x_prev, y_prev, x, y, myPaint);
+//            x_prev = x;
+//            y_prev = y;
+//            x += x_PS_PT_per_sample;
+//        }
+
         for(int i=0 ; i < calibration_length; i++){
-            if(i < calibration_length/5 || i > calibration_length*4/5){
+
+            if(i < calibration_length/10 || i > calibration_length*9/10){
                 y = base_axis;
             } else {
-                y = base_axis - val_per_mv*y_PS_PT_per_mV*scale;
+                y = base_axis - val_per_mv * y_PS_PT_per_mV * scale;
             }
+
             page.getCanvas().drawLine(x_prev, y_prev, x, y, myPaint);
+
             x_prev = x;
             y_prev = y;
             x += x_PS_PT_per_sample;

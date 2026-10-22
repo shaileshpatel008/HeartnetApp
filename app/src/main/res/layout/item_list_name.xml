@@ -69,6 +69,21 @@
 
             </LinearLayout>
 
+            <Button
+                android:id="@+id/btnAssign"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_26sdp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/bg_border_box"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:paddingLeft="@dimen/_20sdp"
+                android:paddingRight="@dimen/_20sdp"
+                android:text="Assign to Cardiologist"
+                android:textAllCaps="false"
+                android:visibility="gone"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_10sdp" />
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </LinearLayout>

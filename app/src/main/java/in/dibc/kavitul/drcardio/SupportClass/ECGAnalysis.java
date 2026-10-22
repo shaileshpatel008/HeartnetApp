@@ -43,6 +43,7 @@ public class ECGAnalysis {
     private static final float QTC = 0.55f; //Corrected QT interval assumed to be 0.45 sec
     private final float val_per_mv = settings.val_per_mv;
     private final int[] index_map = {11, 0, 1, 7, 9, 8, 10, 6, 2, 3, 4, 5};
+//    private final int[] index_map = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
     private final String[] lead_name = {"LEAD_I", "LEAD_II", "LEAD_III", "LEAD_aVR", "LEAD_aVL", "LEAD_aVF", "LEAD_V1", "LEAD_V2", "LEAD_V3", "LEAD_V4", "LEAD_V5", "LEAD_V6"};
     private final float[][] ecgDataArray = new float[MAX_LEADS][TEMP_MAX_ECG_SAMPLES]; /* multiarr */
     private int[][] flag_register = new int[MAX_LEADS][NO_OF_PEAKS];

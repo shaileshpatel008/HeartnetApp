@@ -16,6 +16,8 @@ import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -34,6 +36,11 @@ import androidx.core.content.FileProvider;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.rajat.pdfviewer.PdfRendererView;
 import com.rajat.pdfviewer.PdfViewerActivity;
+import com.ymg.pdf.viewer.PDFView;
+import com.ymg.pdf.viewer.listener.OnErrorListener;
+import com.ymg.pdf.viewer.listener.OnLoadCompleteListener;
+import com.ymg.pdf.viewer.scroll.DefaultScrollHandle;
+import com.ymg.pdf.viewer.util.FitPolicy;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -54,9 +61,6 @@ public class PDFViewerActivity extends AppCompatActivity {
 
     private static final String TAG = "PDFViewerActivity";
 
-    PdfRendererView pdfView;
-
-//    WebView webview;
     ProgressDialog pDialog;
 
     ImageView ivBack;
@@ -69,48 +73,61 @@ public class PDFViewerActivity extends AppCompatActivity {
 
     String filePath = "", fileName = "", localFilePath = "";
 
+    PDFView pdfView8;
+
+    ProgressDialog pd;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_viewer);
-        initApp();
+        initialiseApps();
     }
 
     //Initializes all the variables of appbt and then goes on to the next activity i.e. main activity or menu activity
-    private void initApp() {
+    private void initialiseApps() {
 
-        pdfView = findViewById(R.id.pdfView);
-
-//        webview = (WebView) findViewById(R.id.webview);
-//        webview.getSettings().setJavaScriptEnabled(true);
-//        listener();
-//
-//        pDialog = new ProgressDialog(PDFViewerActivity.this);
-//        pDialog.setTitle("PDF");
-//        pDialog.setMessage("Loading...");
-//        pDialog.setIndeterminate(false);
-//        pDialog.setCancelable(false);
+        pdfView8 = findViewById(R.id.pdfView8);
 
         if(getIntent() != null) {
             filePath = getIntent().getStringExtra("PDFPath");
             fileName = getIntent().getStringExtra("FileName");
             localFilePath = getIntent().getStringExtra("LocalFilePath");
-            Log.v("File Path :: ", ""+filePath);
-//            webview.loadUrl(filePath.replaceAll(" ", "%20"));
-            /*PdfViewerActivity.Companion.launchPdfFromUrl(
-                    context = this,
-                    PdfViewerActivity.Companion.pdf
-            );*/
-
+            Log.v("File Path :: ", "File Path :: "+filePath);
         }
 
-        //pdfView.fromUri(Uri.parse(filePath.replaceAll(" ", "%20"))).load();
-//        pdfView.fromUri(Uri.parse("https://www.orimi.com/pdf-test.pdf"));
-
         context = this;
-//        new RetrievePDFfromUrl().execute(filePath.replaceAll(" ", "%20"));
+        if(filePath.contains("http")) {
+            new RetrievePDFfromUrl().execute(filePath.replaceAll(" ", "%20"));
+        } else {
+            pd = new ProgressDialog(PDFViewerActivity.this);
+            pd.setMessage("Loading PDF...");
+            pd.setIndeterminate(false);
+            pd.setCancelable(false);
+            pd.show();
+            pdfView8.fromFile(new File(filePath))
+                    .enableSwipe(true)
+                    .swipeHorizontal(false)
+                    .enableDoubletap(true)
+                    .defaultPage(0)
+                    .onLoad(new OnLoadCompleteListener() {
+                        @Override
+                        public void loadComplete(int nbPages) {
+                            // Handle loading completion
+                            pd.dismiss();
+                        }
+                    })
+                    .onError(new OnErrorListener() {
+                        @Override
+                        public void onError(Throwable t) {
+                            Log.v("ERROR :: ", t.getMessage().toString());
+                        }
+                    })
+                    .load();
+        }
+
 
         tvTitle = findViewById(R.id.tvTitle);
         tvTitle.setText(fileName);
@@ -124,6 +141,12 @@ public class PDFViewerActivity extends AppCompatActivity {
         });
 
         ivShare = findViewById(R.id.ivShare);
+
+        if(filePath.contains("http")) {
+            ivShare.setVisibility(View.VISIBLE);
+        } else {
+            ivShare.setVisibility(View.GONE);
+        }
         ivShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -221,18 +244,18 @@ public class PDFViewerActivity extends AppCompatActivity {
         protected void onPostExecute(InputStream inputStream) {
             // after the execution of our async
             // task we are loading our pdf in our pdf view.
-//            pdfView.fromStream(inputStream)
-//                    .fitEachPage(false)
-//                    .enableSwipe(true)
-//                    .enableDoubletap(true)
-//                    .pageFling(true)
-//                    .pageSnap(true)
-//                    .pageFitPolicy(FitPolicy.BOTH)
-//                    .nightMode(false)
-//                    .spacing(20)
-//                    .scrollHandle(new DefaultScrollHandle(PDFViewerActivity.this))
-//                    .load();
-//            pdfView.useBestQuality(true);
+            pdfView8.fromStream(inputStream)
+                    .fitEachPage(false)
+                    .enableSwipe(true)
+                    .enableDoubletap(true)
+                    .pageFling(true)
+                    .pageSnap(true)
+                    .pageFitPolicy(FitPolicy.BOTH)
+                    .nightMode(false)
+                    .spacing(20)
+                    .scrollHandle(new DefaultScrollHandle(PDFViewerActivity.this))
+                    .load();
+            pdfView8.useBestQuality(true);
 
             new Handler().postDelayed(new Runnable() {
                 @Override

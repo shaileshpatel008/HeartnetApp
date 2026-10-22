@@ -199,17 +199,31 @@ public class PrefHelper {
 				.commit();
 	}
 
-	public static void setECGDataListResponse(String key, ArrayList<ECGDataModel> getECGDataModel) {
+//	public static void setECGDataListResponse(String key, ArrayList<ECGDataModel> getECGDataModel) {
+//		final Editor editor = App.myPref.edit();
+//		Gson gson = new Gson();
+//		String json = gson.toJson(getECGDataModel);
+//		editor.putString(key, json);
+//		apply(editor);
+//	}
+//	public static ArrayList<ECGDataModel> getECGDataListResponse(String key) {
+//		Gson gson = new Gson();
+//		String json = App.myPref.getString(key, "");
+//		return gson.fromJson(json, new TypeToken<ArrayList<ECGDataModel>>() {
+//		}.getType());
+//	}
+
+	public static void setECGDataListResponse(String key, ArrayList<String> getECGDataModel) {
 		final Editor editor = App.myPref.edit();
 		Gson gson = new Gson();
 		String json = gson.toJson(getECGDataModel);
 		editor.putString(key, json);
 		apply(editor);
 	}
-	public static ArrayList<ECGDataModel> getECGDataListResponse(String key) {
+	public static ArrayList<String> getECGDataListResponse(String key) {
 		Gson gson = new Gson();
 		String json = App.myPref.getString(key, "");
-		return gson.fromJson(json, new TypeToken<ArrayList<ECGDataModel>>() {
+		return gson.fromJson(json, new TypeToken<ArrayList<String>>() {
 		}.getType());
 	}
 }

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -123,6 +124,7 @@ public class AppDeviceConnectedThread extends Thread {
                         bundle.putByte("packetType", oneByteRead[0]);
                         bundle.putByteArray("statusBytes", statusBytesRead);
                         bundle.putCharArray("dataChar", dataCharRead);
+//                        Log.v("Packet Type :: ", ""+oneByteRead[0]);
                         msg.arg1 = count++;
 //                        Log.d(TAG, "read: count"+count);
 //                        Log.d(TAG, "read: "+byteArrayToHex(ch1));
@@ -222,11 +224,11 @@ public class AppDeviceConnectedThread extends Thread {
     public void write(byte[] b) {
         try {
             outStream.write(b[0]);
-//            Log.d(TAG, "write: " + byteArrayToHex(b));
+            //Log.d(TAG, "write: " + byteArrayToHex(b));
             last_packet = b;
-            if(b[0] == 0x53){
+            /* SP 88888888 if(b[0] == 0x53){
                 flushInstream();
-            }
+            }*/
         } catch (Exception e) {
             Log.e(TAG, "Write failed!", e);
             Message msg = btHelper.mHandlersbluetooth.obtainMessage();

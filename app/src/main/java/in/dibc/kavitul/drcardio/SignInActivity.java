@@ -2,6 +2,7 @@ package in.dibc.kavitul.drcardio;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -39,7 +40,15 @@ import in.dibc.kavitul.bluetoothmodule.AppBluetoothHelper;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mLog;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
+import in.dibc.kavitul.drcardio.apis.ApiService;
+import in.dibc.kavitul.drcardio.apis.RetrofitClient;
+import in.dibc.kavitul.drcardio.apis.request.AuthRequest;
+import in.dibc.kavitul.drcardio.apis.response.AuthResponse;
+import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SignInActivity extends AppCompatActivity {
     String TAG = "TeleECG_SignInScreen";
@@ -52,7 +61,24 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_in);
+
+        int screenSize = getResources().getConfiguration().screenLayout &
+                Configuration.SCREENLAYOUT_SIZE_MASK;
+
+        switch(screenSize) {
+            case Configuration.SCREENLAYOUT_SIZE_LARGE:
+                setContentView(R.layout.activity_sign_in);
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_NORMAL:
+                setContentView(R.layout.activity_sign_in);
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_SMALL:
+                setContentView(R.layout.activity_sign_in);
+                break;
+            default:
+                setContentView(R.layout.activity_sign_in);
+        }
+//        setContentView(R.layout.activity_sign_in);
         initialiseApp();
     }
 
@@ -90,7 +116,8 @@ public class SignInActivity extends AppCompatActivity {
                 } else if(edtUserName.getText().length() == 0) {
                     Toast.makeText(SignInActivity.this, "Please enter password", Toast.LENGTH_LONG).show();
                 } else {
-                    callSignInApi();
+//                    callSignInApi();
+                    callAuthenticateAPI();
                 }
             }
         });
@@ -111,7 +138,7 @@ public class SignInActivity extends AppCompatActivity {
         pd.show();
 
         // url to post our data
-        String url = "https://cloudecg.drcardio.in/api/login";
+        String url = PathUtil.API_URL+"api/login";
 //        String url = "http://192.168.1.2:8000/api/login";
 
 //        loadingPB.setVisibility(View.VISIBLE);
@@ -218,6 +245,60 @@ public class SignInActivity extends AppCompatActivity {
         // below line is to make
         // a json object request.
         queue.add(request);
+    }
+
+    private void callAuthenticateAPI() {
+        // Show default progress dialog
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Authenticating patient...");
+        progressDialog.setCancelable(false); // Prevents dismissal on touch outside
+        progressDialog.show();
+
+        ApiService apiService = RetrofitClient.getApiService();
+        AuthRequest authRequest = new AuthRequest(edtUserName.getText().toString().trim(), edtPassword.getText().toString().trim()); //"drcardiophy"
+
+        Call<AuthResponse> call = apiService.authenticate(authRequest);
+        call.enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                progressDialog.dismiss();
+
+                if (response.isSuccessful() && response.body() != null) {
+
+                    AuthResponse authResponse = response.body();
+
+                    if (authResponse.isSuccess()) {
+                        // ✅ Login success
+                        PrefHelper.setBoolean("isUserLoggedIn", true);
+                        PrefHelper.setString("AppToken", authResponse.getToken());
+                        PathUtil.TOKEN = authResponse.getToken();
+
+                        Log.d("LOGIN_SUCCESS", "Token: " + authResponse.getToken());
+
+                        Toast.makeText(SignInActivity.this, "User login successfully", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+
+                    } else {
+                        // ❌ Login failed (Invalid Username / Password)
+                        Toast.makeText(SignInActivity.this, authResponse.getToken(), Toast.LENGTH_SHORT).show();
+                    }
+
+                } else {
+                    // ❌ API error (500, 404 etc.)
+                    Toast.makeText(SignInActivity.this, "Server error", Toast.LENGTH_SHORT).show();
+                    Log.e("LOGIN_ERROR", "Error: " + response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AuthResponse> call, Throwable t) {
+                progressDialog.dismiss();
+                Log.e("LOGIN_FAILURE", "Failed: " + t.getMessage());
+            }
+        });
     }
 
 }

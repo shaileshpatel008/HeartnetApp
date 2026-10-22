@@ -520,8 +520,8 @@ public class PatientData extends AppCompatActivity implements View.OnClickListen
     }
 
     private void loadProfileDefault() {
-        Glide.with(this).load(R.mipmap.baseline_account_circle_black_48)
-                .into(imgProfile);
+        Glide.with(this).load(R.mipmap.ic_launcher)
+                .into(imgProfile); //baseline_account_circle_black_48
         imgProfile.setColorFilter(ContextCompat.getColor(this, R.color.profile_default_tint));
     }
 

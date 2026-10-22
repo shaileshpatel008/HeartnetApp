@@ -29,6 +29,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_200sdp"
                 android:scaleType="fitXY"
+                android:tint="@color/colorPrimary"
                 android:src="@drawable/mainlogo" />
 
             <LinearLayout
@@ -55,7 +56,8 @@
                     android:textStyle="bold"
                     android:layout_marginLeft="@dimen/dimen_20dp"
                     android:textColor="@color/white"
-                    android:textSize="@dimen/_15sdp" />
+                    android:textSize="@dimen/_15sdp"
+                    android:visibility="gone"/>
             </LinearLayout>
 
             <ImageView
@@ -65,7 +67,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="@dimen/_75sdp"
                 android:layout_marginBottom="@dimen/_25sdp"
-                android:src="@drawable/whitelogo" />
+                android:src="@drawable/ic_logo" />
 
             <LinearLayout
                 android:id="@+id/llHelp"
@@ -77,6 +79,7 @@
                 android:layout_marginRight="@dimen/_10sdp"
                 android:background="@drawable/circle_rect_white_light"
                 android:gravity="center"
+                android:visibility="gone"
                 android:orientation="vertical">
 
                 <ImageView
@@ -92,18 +95,17 @@
 
         <ImageView
             android:id="@+id/logotext"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/_60sdp"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_80sdp"
             android:layout_below="@+id/img_logo"
             android:layout_gravity="center"
             android:padding="@dimen/_15sdp"
-            android:src="@drawable/logotext" />
+            android:src="@drawable/ic_heartnet_text" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="top|center_horizontal"
-            android:layout_marginTop="@dimen/_20sdp"
             android:gravity="center"
             android:orientation="horizontal"
             android:padding="6sp">
@@ -114,7 +116,7 @@
                 android:contentDescription="@string/bluetooth_icon"
                 android:gravity="center"
                 android:src="@drawable/ic_bluetooth_connected_black_24dp"
-                app:tint="@color/red" />
+                app:tint="@color/colorPrimary" />
 
             <TextView
                 android:id="@+id/txt_connected_device_name"
@@ -172,7 +174,7 @@
                         android:text="@string/new_ecg"
                         android:textAllCaps="true"
                         android:textStyle="bold"
-                        android:textColor="@color/red"
+                        android:textColor="@color/colorPrimary"
                         android:textSize="@dimen/_13sdp" />
                 </LinearLayout>
 
@@ -230,7 +232,7 @@
 <!--                        android:gravity="center"-->
 <!--                        android:text="Acquire New ECG"-->
 <!--                        android:textAllCaps="true"-->
-<!--                        android:textColor="@color/red"-->
+<!--                        android:textColor="@color/colorPrimary"-->
 <!--                        android:textSize="@dimen/_13sdp"-->
 <!--                        android:textStyle="bold"-->
 <!--                        android:visibility="gone" />-->
@@ -240,33 +242,46 @@
 
             <!--</com.kuassivi.component.RipplePulseRelativeLayout>-->
 
-            <com.gauravbhola.ripplepulsebackground.RipplePulseLayout
-                android:layout_width="@dimen/_240sdp"
-                android:layout_height="@dimen/_240sdp"
-                android:clipChildren="true"
-                android:layout_gravity="center"
+<!--            <com.gauravbhola.ripplepulsebackground.RipplePulseLayout-->
+<!--                android:layout_width="@dimen/_240sdp"-->
+<!--                android:layout_height="@dimen/_240sdp"-->
+<!--                android:clipChildren="false"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:gravity="center"-->
+<!--                ripple:rippleColor="@color/colorPrimary"-->
+<!--                ripple:rippleType="stroke"-->
+<!--                ripple:strokeWidth="2dp"-->
+<!--                ripple:startRadius="20dp"-->
+<!--                ripple:endRadius="@dimen/_240sdp"-->
+<!--                ripple:duration="2000"-->
+<!--                android:visibility="visible"-->
+<!--                android:id="@+id/layout_ripplepulse">-->
+
+            <pl.bclogic.pulsator4droid.library.PulsatorLayout
+                android:id="@+id/layout_ripplepulse"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:gravity="center"
-                ripple:rippleColor="@color/colorPrimary"
-                ripple:rippleType="fill"
-                ripple:strokeWidth="6dp"
-                ripple:startRadius="0dp"
-                ripple:endRadius="100dp"
-                ripple:duration="2000"
-                android:visibility="visible"
-                android:id="@+id/layout_ripplepulse">
+                android:layout_gravity="center"
+                app:pulse_count="2"
+                app:pulse_duration="2000"
+                app:pulse_repeat="0"
+                app:pulse_color="@color/colorPrimary"
+                app:pulse_startFromScratch="false"
+                app:pulse_interpolator="Linear">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:gravity="center"
-                    android:layout_marginTop="@dimen/_70sdp"
+                    android:layout_gravity="center"
                     android:orientation="vertical" >
 
                     <LinearLayout
                         android:id="@+id/llAcquireNewECG"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerInParent="true"
+                        android:layout_gravity="center"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="@dimen/_24sdp">
@@ -275,18 +290,16 @@
                             android:id="@+id/menu_new_ecg"
                             android:layout_width="@dimen/_50sdp"
                             android:layout_height="@dimen/_50sdp"
-                            android:layout_centerInParent="true"
+                            android:layout_gravity="center"
                             android:background="@drawable/circle_rect_primary_light"
                             android:gravity="center"
-                            android:layout_gravity="center"
-                            android:orientation="vertical">
+                            android:orientation="horizontal">
 
                             <ImageView
                                 android:layout_width="@dimen/_30sdp"
                                 android:layout_height="@dimen/_30sdp"
-                                android:layout_marginTop="@dimen/_5sdp"
-                                android:src="@drawable/ic_ecg_home"
-                                app:tint="@color/colorWhite" />
+                                android:layout_marginTop="@dimen/_3sdp"
+                                android:src="@drawable/ic_ecg_home" />
 
                         </LinearLayout>
 
@@ -299,7 +312,7 @@
                             android:gravity="center"
                             android:text="Acquire New ECG"
                             android:textAllCaps="true"
-                            android:textColor="@color/red"
+                            android:textColor="@color/colorPrimary"
                             android:textSize="@dimen/_13sdp"
                             android:textStyle="bold"
                             android:visibility="gone" />
@@ -307,10 +320,32 @@
 
                 </LinearLayout>
 
+            </pl.bclogic.pulsator4droid.library.PulsatorLayout>
 
-            </com.gauravbhola.ripplepulsebackground.RipplePulseLayout>
+
+<!--            </com.gauravbhola.ripplepulsebackground.RipplePulseLayout>-->
 
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btnScanList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Scan List"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/colorPrimary"/>
+
+        <!--<np.com.susanthapa.curved_bottom_navigation.CurvedBottomNavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:layout_gravity="bottom"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />-->
 
         <com.simform.custombottomnavigation.SSCustomBottomNavigation
             android:id="@+id/bottomNavigation"
@@ -332,7 +367,8 @@
             app:ss_selectedIconColor="@color/colorWhite"
             app:ss_selectedIconTextColor="@color/colorWhite"
             app:ss_shadowColor="@color/colorGray"
-            app:ss_waveHeight="8" />
+            app:ss_waveHeight="8"
+            android:visibility="gone"/>
 
         <ScrollView
             android:layout_width="match_parent"

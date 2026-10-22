@@ -113,6 +113,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.act_settings);
+        Log.v("ON CREATE", "ON CREATE");
         initUIElements();
         mLog.d(TAG, "onCreate","noDATA", "reached");
         init();
@@ -206,11 +207,14 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
         //Set values in UI
         //settings_test_mode.setChecked(settings.test_mode.equals("true"));
+        Log.v("GET SETTINGS", "");
         if(settings.test_mode.equals("true")) {
+            Log.v("SWITCH 1111", "SWITCH 1111");
             tvSelected.setText("You selected TEST Mode");
 //            mstb.setValue(1);
             mstb.selectState(1, true);
         } else {
+            Log.v("SWITCH 2222", "SWITCH 2222");
             tvSelected.setText("You selected ECG Mode");
 //            mstb.setValue(0);
             mstb.selectState(0, true);
@@ -495,15 +499,17 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     private void saveSettings(){
         //Get value of switch test mode
         //settings.test_mode = settings_test_mode.isChecked() ? "true" : "false";
-        if(mstb.getId() == TOGGLE_ID) {
-            settings.test_mode = "true";
-            mstb.selectState(1);
-            tvSelected.setText("You selected TEST Mode");
-        } else {
-            settings.test_mode = "false";
-            mstb.selectState(0);
-            tvSelected.setText("You selected ECG Mode");
-        }
+//        if(mstb.getId() == TOGGLE_ID) {
+//            Log.v("SWITCH 3333", "SWITCH 3333");
+//            settings.test_mode = "true";
+//            mstb.selectState(1);
+//            tvSelected.setText("You selected TEST Mode");
+//        } else {
+//            Log.v("SWITCH 4444", "SWITCH 4444");
+//            settings.test_mode = "false";
+//            mstb.selectState(0);
+//            tvSelected.setText("You selected ECG Mode");
+//        }
         settings.csv = switch_csv.isChecked();
 
 
@@ -520,7 +526,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         String oldLang = settings.language;
         settings.language = spinner_language.getSelectedItem().toString();
         settings.log = spinner_log.getSelectedItem().toString();
-        settings.language_code = appbt.res.getString(appbt.res.getIdentifier(settings.language, "string", appbt.packageName));
+//        settings.language_code = appbt.res.getString(appbt.res.getIdentifier(settings.language, "string", appbt.packageName));
 
         if (!oldLang.equals(settings.language)) {
 //        LocaleHelper.setLocale(SettingsActivity.this, langCode);
@@ -588,7 +594,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void loadProfileDefault() {
-        Glide.with(this).load(R.mipmap.baseline_account_circle_black_48)
+        Glide.with(this).load(R.mipmap.ic_launcher)
                 .into(imgProfile);
         imgProfile.setColorFilter(ContextCompat.getColor(this, R.color.profile_default_tint));
     }
@@ -789,10 +795,12 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 //        Toast.makeText(this, "State :: "+state.getSelectedText(), Toast.LENGTH_SHORT).show();
 //        String stateName = getString(state.text);
         if (i == 0) {
+            Log.v("SWITCH 5555", "SWITCH 5555");
             tvSelected.setText("You selected ECG Mode");
             settings.test_mode = "false";
 //            mstb.selectState(1, true);
         } else {
+            Log.v("SWITCH 6666", "SWITCH 6666");
             tvSelected.setText("You selected Test Mode");
             settings.test_mode = "true";
 //            mstb.selectState(0);

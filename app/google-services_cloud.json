@@ -1,0 +1,126 @@
+{
+  "project_info": {
+    "project_number": "537084219605",
+    "project_id": "dr-cardio-ecg-advanced",
+    "storage_bucket": "dr-cardio-ecg-advanced.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537084219605:android:6df8949c69ef72ab32525c",
+        "android_client_info": {
+          "package_name": "com.kavitul.drcardioecg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537084219605:android:eca35a9ca537c2fc32525c",
+        "android_client_info": {
+          "package_name": "com.kavitul.drcardioecgcloud"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537084219605:android:c9802eb97dd4090232525c",
+        "android_client_info": {
+          "package_name": "com.kavitul.drcardioecgsdk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537084219605:android:c3e5a2994d1ce13132525c",
+        "android_client_info": {
+          "package_name": "com.smarthealthecg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

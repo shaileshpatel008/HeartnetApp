@@ -27,7 +27,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="@dimen/_60sdp"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/drcardiologo" />
+                android:src="@drawable/ic_heartnet" />
 
             <EditText
                 android:id="@+id/edtUserName"

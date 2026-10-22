@@ -17,6 +17,7 @@ import in.dibc.kavitul.bluetoothmodule.BluetoothPermissions;
 import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mFile;
 import in.dibc.kavitul.drcardio.SupportClass.mLog;
+import in.dibc.kavitul.drcardio.utils.PathUtil;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
 import in.dibc.kavitul.drcardio.walkthroughscreen.IntroductionActivity;
 
@@ -34,6 +35,7 @@ public class StartupActivity extends AppCompatActivity {
 
     //Initializes all the variables of appbt and then goes on to the next activity i.e. main activity or menu activity
     private void initApp() {
+        PathUtil.TOKEN = PrefHelper.getString("AppToken", "");
         appbt.btHelper = new AppBluetoothHelper(this);
         appbt.res = getResources();
         appbt.packageName = getPackageName();

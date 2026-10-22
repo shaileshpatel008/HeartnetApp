@@ -15,12 +15,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import in.dibc.kavitul.drcardio.R;
+import in.dibc.kavitul.drcardio.ReportActivity;
 
 public class ItemListViewAdapter extends ArrayAdapter<String> implements Filterable {
 
     // declaring our ArrayList of items
     private ArrayList<String> objects;
-    private ArrayList<String> objectsFiltered;
+//    private ArrayList<String> objectsFiltered;
 
     Context mContext;
 
@@ -31,13 +32,13 @@ public class ItemListViewAdapter extends ArrayAdapter<String> implements Filtera
     public ItemListViewAdapter(Context context, int textViewResourceId, ArrayList<String> objects) {
         super(context, textViewResourceId, objects);
         this.objects = objects;
-        this.objectsFiltered = objects;
+//        this.objectsFiltered = objects;
         this.mContext = context;
     }
 
     @Override
     public int getCount() {
-        return objectsFiltered.size();
+        return ReportActivity.file_names.size();
     }
 
 
@@ -64,7 +65,7 @@ public class ItemListViewAdapter extends ArrayAdapter<String> implements Filtera
          *
          * Therefore, i refers to the current Item object.
          */
-        String i = objectsFiltered.get(position);
+        String i = ReportActivity.file_names.get(position);
 
         if (i != null) {
 
@@ -109,7 +110,7 @@ public class ItemListViewAdapter extends ArrayAdapter<String> implements Filtera
 
                 FilterResults filterResults = new FilterResults();
                 if(constraint == null || constraint.length() == 0){
-                    filterResults.count = objectsFiltered.size();
+                    filterResults.count = ReportActivity.file_names.size();
                     filterResults.values = objects;
 
                 } else{
@@ -131,7 +132,7 @@ public class ItemListViewAdapter extends ArrayAdapter<String> implements Filtera
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
 
-                objectsFiltered = (ArrayList<String>) results.values;
+                ReportActivity.file_names = (ArrayList<String>) results.values;
                 notifyDataSetChanged();
 
             }

@@ -70,6 +70,8 @@ import in.dibc.kavitul.drcardio.SupportClass.appbt;
 import in.dibc.kavitul.drcardio.SupportClass.mLog;
 import in.dibc.kavitul.drcardio.SupportClass.settings;
 import in.dibc.kavitul.drcardio.utils.PrefHelper;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 
 public class MyAccountsActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = "My_Accounts_Activity";
@@ -101,9 +103,7 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
     protected void onResume() {
         super.onResume();
 
-//        bubbleNavigation.setCurrentActiveItem(2);
-
-        ssCustomBottomNavigation.setSelectedIndex(2);
+//        ssCustomBottomNavigation.setSelectedIndex(2);
     }
 
     @Override
@@ -133,23 +133,8 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
             }
         });
 
-//        bubbleNavigation = findViewById(R.id.equal_navigation_bar);
-//        bubbleNavigation.setNavigationChangeListener(new BubbleNavigationChangeListener() {
-//            @Override
-//            public void onNavigationChanged(View view, int position) {
-//                //navigation changed, do something
-//                if(position == 0) {
-//                    finish();
-//                } else if(position == 1) {
-//                    Intent intent = new Intent(MyAccountsActivity.this, ReportActivity.class);
-//                    startActivity(intent);
-//                    finish();
-//                }
-//            }
-//        });
-
         ssCustomBottomNavigation = findViewById(R.id.bottomNavigation);
-        ssCustomBottomNavigation.setSelectedIndex(0);
+        ssCustomBottomNavigation.setSelectedIndex(2);
         ssCustomBottomNavigation.add(new Model(R.drawable.ic_home_new, ID_HOME, ID_HOME, R.string.menu_1, R.string.menu_1));
         ssCustomBottomNavigation.add(new Model(R.drawable.ic_reports_new, ID_REPORTS, ID_REPORTS, R.string.menu_2, R.string.menu_2));
         ssCustomBottomNavigation.add(new Model(R.drawable.ic_settings, ID_SETTINGS, ID_SETTINGS, R.string.menu_3, R.string.menu_3));
@@ -161,23 +146,24 @@ public class MyAccountsActivity extends AppCompatActivity implements View.OnClic
             switch (item.getId()) {
                 case ID_HOME:
                     name = "HOME";
-                    intent = new Intent(MyAccountsActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
+//                    intent = new Intent(MyAccountsActivity.this, MainActivity.class);
+//                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//                    startActivity(intent);
                     ssCustomBottomNavigation.setSelectedIndex(0);
+                    finish();
                     break;
                 case ID_REPORTS:
                     name = "REPORTS";
                     intent = new Intent(MyAccountsActivity.this, ReportActivity.class);
                     startActivity(intent);
-                    finish();
-                    ssCustomBottomNavigation.setSelectedIndex(0);
+                    this.finish();
+                    ssCustomBottomNavigation.setSelectedIndex(1);
                     break;
                 case ID_SETTINGS:
-                    /*name = "MY ACCOUNTS";
+                    name = "MY ACCOUNTS";
                     intent = new Intent(MyAccountsActivity.this, MyAccountsActivity.class);
                     startActivity(intent);
-                    ssCustomBottomNavigation.setSelectedIndex(0);*/
+                    ssCustomBottomNavigation.setSelectedIndex(2);
                     break;
                 default:
                     name = "";

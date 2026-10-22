@@ -2,4 +2,10 @@
     <!--<external-files-path name="reports" path="storage/emulated/0/TELE-ECG/TELE-ECG Reports/"/>-->
     <!--<files-path name="tooy" path="docs/"/>-->
     <root-path name="root" path="." />
+    <external-files-path
+        name="documents"
+        path="Documents/heartnetapp/" />
+    <files-path
+        name="crash_reports"
+        path="." />
 </paths>

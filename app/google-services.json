@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "537084219605",
     "project_id": "dr-cardio-ecg-advanced",
-    "storage_bucket": "dr-cardio-ecg-advanced.appspot.com"
+    "storage_bucket": "dr-cardio-ecg-advanced.firebasestorage.app"
   },
   "client": [
     {
@@ -12,12 +12,7 @@
           "package_name": "com.kavitul.drcardioecg"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
@@ -25,41 +20,7 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:537084219605:android:eca35a9ca537c2fc32525c",
-        "android_client_info": {
-          "package_name": "com.kavitul.drcardioecgcloud"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
@@ -70,12 +31,7 @@
           "package_name": "com.kavitul.drcardioecgsdk"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
@@ -83,12 +39,83 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537084219605:android:ee0570b6b0bda28232525c",
+        "android_client_info": {
+          "package_name": "com.kavitultech.drcardioecgcloud"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537084219605:android:d01937d3d3fbdfb832525c",
+        "android_client_info": {
+          "package_name": "com.kavitultech.heartnetapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537084219605:android:8559a69cadf4acbb32525c",
+        "android_client_info": {
+          "package_name": "com.kavitultech.medicardiodigitalecg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537084219605:android:40567c7861ce73b132525c",
+        "android_client_info": {
+          "package_name": "com.kavitultech.nirixirhealth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
         }
       }
     },
@@ -99,12 +126,7 @@
           "package_name": "com.smarthealthecg"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyDocBiTODLvFmQ1XhT0t2X2oxKN3mow49k"
@@ -112,12 +134,7 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "537084219605-uvk4qebohu1ma8ucvmqset99mbr22om5.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

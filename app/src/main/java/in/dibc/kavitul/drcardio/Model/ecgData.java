@@ -42,6 +42,7 @@ public class ecgData {
     static String[] patientFields;
 
     public static int[] lead_arrange = {1, 2, 8, 9, 10, 11, 7, 3, 5, 4, 6, 0};
+//    public static int[] lead_arrange = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
     public static String[] lead_name = {"I      ", "II     ", "III    ", "aVR", "aVL", "aVF", "V1", "V2", "V3", "V4", "V5", "V6"};
 
     public static LineChart[] chart = new LineChart[ecgData.NO_OF_CHANNELS];

@@ -3,11 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_100sdp"
+            android:layout_height="@dimen/_80sdp"
             android:orientation="horizontal"
             android:gravity="center"
             android:layout_gravity="center_vertical"
@@ -66,31 +67,21 @@
 
         </LinearLayout>
 
-        <LinearLayout
+<!--        <WebView-->
+<!--            android:id="@+id/wvPDF"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:visibility="gone"-->
+<!--            tools:layout_editor_absoluteX="8dp"-->
+<!--            tools:layout_editor_absoluteY="8dp" />-->
+
+        <com.ymg.pdf.viewer.PDFView
+            android:id="@+id/pdfView8"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/round_rect_header"
-            android:layout_marginTop="@dimen/_minus30sdp"
-            android:orientation="vertical">
-
-                <!--<com.github.barteksc.pdfviewer.PDFView
-                    android:id="@+id/pdfView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scrollbars="vertical"/>-->
-
-                <com.rajat.pdfviewer.PdfRendererView
-                    android:id="@+id/pdfView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    app:pdfView_divider="@drawable/pdf_viewer_divider"
-                    app:pdfView_showDivider="false" />
-
-                <!--<WebView
-                    android:layout_width="match_parent"
-                    android:background="#ffffff"
-                    android:layout_height="match_parent"
-                    android:id="@+id/webview"></WebView>-->
-        </LinearLayout>
+            android:layout_weight="1"
+            android:layout_gravity="center"/>
 
 </LinearLayout>

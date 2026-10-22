@@ -70,7 +70,8 @@ public class AppBroadcastReceiver extends BroadcastReceiver {
                 break;
             case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                 Log.d(TAG, "onReceive: discovery stopped");
-                stopButtonAnimation();
+                //stopButtonAnimation();
+                startButtonAnimation();
                 break;
             default:
 

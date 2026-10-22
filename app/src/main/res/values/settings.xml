@@ -27,7 +27,7 @@
     <string name="English" translatable="false">en</string>
     <string name="Hindi" translatable="false">hi</string>
 
-    <string name="storage_folder" translatable="false">Dr.cardio</string>
+    <string name="storage_folder" translatable="false">Heartnet</string> <!--Dr.cardio-->
 
     <string name="report_text_separator" translatable="false"> : </string>
 

@@ -12,8 +12,8 @@
     <color name="sky">#61C0FE</color>
     <color name="bg_color">#efefef</color>
 
-    <color name="colorPrimaryLight">#11c53827</color>
-    <color name="colorPrimaryLight1">#33c53827</color>
-    <color name="colorPrimaryLight2">#33c53827</color>
+    <color name="colorPrimaryLight">#11e11d2b</color>
+    <color name="colorPrimaryLight1">#33e11d2b</color>
+    <color name="colorPrimaryLight2">#33e11d2b</color>
     <color name="colorGray">#66e7e7e7</color>
 </resources>
